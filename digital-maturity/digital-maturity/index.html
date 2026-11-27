@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>企业数字化成熟度自评 - 6维度快速诊断</title>
+<style>
+  :root {
+    --primary: #0f766e;
+    --primary-light: #14b8a6;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --amber: #d97706;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px 56px; }
+  header { text-align: center; padding: 28px 0 20px; }
+  header h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  header h1 span { color: var(--primary); }
+  header p { color: var(--text-light); font-size: 14px; max-width: 560px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+  .dim-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; cursor: pointer; }
+  .dim-title h2 { font-size: 16px; font-weight: 700; color: var(--primary); }
+  .dim-title .progress { font-size: 13px; color: var(--text-light); }
+  .q { padding: 12px 0; border-bottom: 1px dashed var(--border); }
+  .q:last-child { border-bottom: none; }
+  .q .qtext { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt { flex: 1; min-width: 110px; text-align: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; cursor: pointer; transition: all 0.15s; color: var(--text-light); }
+  .opt:hover { border-color: var(--primary-light); color: var(--text); }
+  .opt.sel { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 500; }
+  .btn {
+    display: inline-block; padding: 12px 32px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover { background: #115e59; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .center { text-align: center; padding: 22px 0; }
+  .level-badge { display: inline-block; padding: 6px 20px; border-radius: 999px; color: #fff; font-size: 18px; font-weight: 700; margin: 10px 0; }
+  .score-big { font-size: 56px; font-weight: 800; color: var(--primary); }
+  .score-total { color: var(--text-light); font-size: 14px; }
+  .dim-result { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .dim-result:last-child { border-bottom: none; }
+  .dim-result .name { width: 110px; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .bar { flex: 1; height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary-light), var(--primary)); border-radius: 999px; transition: width 0.6s ease; }
+  .dim-result .sc { width: 52px; text-align: right; font-size: 14px; font-weight: 700; color: var(--primary); }
+  .advice { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 14px 16px; font-size: 13.5px; margin-top: 10px; }
+  .advice b { color: var(--primary); }
+  .radar-wrap { display: flex; justify-content: center; margin: 10px 0 4px; }
+  .desc-btn { background: none; border: none; color: var(--text-light); font-size: 12px; cursor: pointer; text-decoration: underline; }
+  footer { text-align: center; color: var(--text-light); font-size: 12px; padding: 20px 0; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>企业<span>数字化成熟度</span>自评</h1>
+    <p>6 个维度 × 18 道题，约 5 分钟。基于业内通用的成熟度分级框架，帮你快速定位企业数字化所处阶段，并给出可执行的下一步建议。</p>
+  </header>
+
+  <div id="quiz"></div>
+
+  <div class="center">
+    <button class="btn" id="btnSubmit" disabled>查看诊断报告</button>
+    <p style="color:var(--text-light);font-size:12px;margin-top:8px;" id="progressHint">已完成 0 / 18 题</p>
+  </div>
+
+  <div id="report" class="hidden"></div>
+
+  <footer>企业数字化成熟度自评 · 结果仅供内部参考 · 全程本地计算，数据不外传</footer>
+</div>
+
+<script>
+(function () {
+  var DIMS = [
+    {
+      key: 'strategy', name: '战略与规划',
+      questions: [
+        '公司是否有明确的数字化战略或转型路线图（而非零散的工具采购）？',
+        '数字化预算是否被当作长期投入，而非按年度随砍随加？',
+        '高层（一把手）是否直接参与或过问数字化项目？'
+      ]
+    },
+    {
+      key: 'process', name: '业务流程',
+      questions: [
+        '核心业务流程（订单、生产、审批等）是否已线上化？',
+        '跨部门协作是否依靠系统流转，而不是微信群+Excel？',
+        '是否定期梳理和优化流程，而不是出了问题才改？'
+      ]
+    },
+    {
+      key: 'data', name: '数据治理',
+      questions: [
+        '经营数据是否集中在一个（或少数几个）可信的来源？',
+        '管理层看数据是否实时/日报，而不是临时找人拉表？',
+        '数据口径（如销售额、活跃用户）各部门是否一致？'
+      ]
+    },
+    {
+      key: 'tech', name: '技术平台',
+      questions: [
+        '核心系统是否支持接口集成（API），而非孤岛系统？',
+        'IT 基础设施是否使用云服务或已上云？',
+        '是否有自动化手段（RPA/脚本/工作流）替代重复人工操作？'
+      ]
+    },
+    {
+      key: 'people', name: '组织与人才',
+      questions: [
+        '是否有专门的数字化团队或负责人（而非行政兼任）？',
+        '业务人员是否被培训过使用数字化工具，且真的在用？',
+        '数字化项目失败后，团队是否复盘并沉淀经验？'
+      ]
+    },
+    {
+      key: 'security', name: '安全与合规',
+      questions: [
+        '重要数据是否有备份和恢复演练？',
+        '员工账号权限是否有管理制度（离职即回收）？',
+        '客户敏感数据的收集和使用是否合规？'
+      ]
+    }
+  ];
+
+  var OPTS = [
+    { v: 1, t: '完全没有' },
+    { v: 2, t: '偶尔提到' },
+    { v: 3, t: '部分做到' },
+    { v: 4, t: '基本做到' },
+    { v: 5, t: '完全做到' }
+  ];
+
+  var LEVELS = [
+    { min: 18, max: 33, name: '起步期', color: '#dc2626', desc: '数字化处于零散尝试阶段，缺乏统一规划。这个阶段最要紧的不是买工具，而是明确"为什么转、先转哪里"——建议从一把手工程开始，选一个痛点最大、最容易见效的流程做单点突破，用结果换支持。' },
+    { min: 34, max: 49, name: '成长期', color: '#ea580c', desc: '局部数字化已有起色，但系统之间、部门之间还没有打通。建议优先做两件事：把核心流程线上化闭环（哪怕是轻量 SaaS），以及建立统一的数据口径。这个阶段最怕的是"各买各的"，引入集成视角能少走很多弯路。' },
+    { min: 50, max: 65, name: '规范期', color: '#d97706', desc: '主要流程已在线、数据开始集中，接下来是从"有系统"到"系统好用"。建议开始建设数据看板和自动化能力（RPA/工作流），把重复劳动交出去，同时补齐安全与权限治理——数据多了之后这是迟早要还的账。' },
+    { min: 66, max: 81, name: '优化期', color: '#0d9488', desc: '数字化已成为日常运营的基础设施。这个阶段的重点是用数据驱动决策和持续优化：建立指标体系、开展 A/B 与流程复盘、把成功经验标准化后复制到新业务线。同时可以开始探索 AI 场景（智能客服、辅助决策）。' },
+    { min: 82, max: 90, name: '引领期', color: '#0f766e', desc: '数字化能力已外化为竞争力。建议关注：平台化能力开放（赋能上下游）、数据资产化、以及组织敏捷度——这个层级的企业，瓶颈通常不在技术，而在组织能否持续进化。' }
+  ];
+
+  var answers = {};
+  var total = 0;
+  DIMS.forEach(function (d) { total += d.questions.length; });
+
+  function renderQuiz() {
+    var html = '';
+    DIMS.forEach(function (d, di) {
+      html += '<div class="card"><div class="dim-title"><h2>' + d.name + '</h2><span class="progress" id="p-' + d.key + '">0 / ' + d.questions.length + '</span></div>';
+      d.questions.forEach(function (q, qi) {
+        html += '<div class="q"><div class="qtext">' + (di * 3 + qi + 1) + '. ' + q + '</div><div class="opts" data-q="' + d.key + '-' + qi + '">';
+        OPTS.forEach(function (o) {
+          html += '<div class="opt" data-v="' + o.v + '">' + o.t + '</div>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById('quiz').innerHTML = html;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.opts'), function (box) {
+      box.addEventListener('click', function (e) {
+        var opt = e.target.closest('.opt');
+        if (!opt) return;
+        Array.prototype.forEach.call(box.querySelectorAll('.opt'), function (o) { o.classList.remove('sel'); });
+        opt.classList.add('sel');
+        var key = box.getAttribute('data-q');
+        answers[key] = Number(opt.getAttribute('data-v'));
+        updateProgress();
+      });
+    });
+  }
+
+  function updateProgress() {
+    var done = Object.keys(answers).length;
+    document.getElementById('progressHint').textContent = '已完成 ' + done + ' / ' + total + ' 题';
+    document.getElementById('btnSubmit').disabled = done < total;
+    DIMS.forEach(function (d) {
+      var c = 0;
+      d.questions.forEach(function (q, qi) { if (answers[d.key + '-' + qi] !== undefined) c++; });
+      document.getElementById('p-' + d.key).textContent = c + ' / ' + d.questions.length;
+    });
+  }
+
+  function levelOf(score) {
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (score >= LEVELS[i].min && score <= LEVELS[i].max) return LEVELS[i];
+    }
+    return LEVELS[LEVELS.length - 1];
+  }
+
+  function adviceFor(dimKey, score) {
+    var pct = score / 15;
+    if (pct < 0.4) return '优先补课：先把这个维度的第一件事做起来，不求全面，求突破。';
+    if (pct < 0.7) return '已有基础：下一步是把做到的部分制度化（写进流程和考核），避免因人而异。';
+    return '相对扎实：保持节奏，可以把这个维度作为标杆经验向其他维度迁移。';
+  }
+
+  function renderReport() {
+    var totalScore = 0;
+    var dimScores = {};
+    DIMS.forEach(function (d) {
+      var s = 0;
+      d.questions.forEach(function (q, qi) { s += answers[d.key + '-' + qi]; });
+      dimScores[d.key] = s;
+      totalScore += s;
+    });
+    var lv = levelOf(totalScore);
+
+    var html = '<div class="card center">';
+    html += '<div class="score-total">综合成熟度得分（满分 90）</div>';
+    html += '<div class="score-big">' + totalScore + '</div>';
+    html += '<div class="level-badge" style="background:' + lv.color + '">' + lv.name + '</div>';
+    html += '<p style="max-width:620px;margin:8px auto 0;text-align:left;font-size:14px;">' + lv.desc + '</p>';
+    html += '</div>';
+
+    // 雷达图
+    html += '<div class="card"><h2 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px;">维度雷达</h2>';
+    html += '<div class="radar-wrap"><canvas id="radar" width="420" height="360"></canvas></div>';
+    html += '</div>';
+
+    html += '<div class="card"><h2 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:10px;">各维度得分与建议</h2>';
+    DIMS.forEach(function (d) {
+      var s = dimScores[d.key];
+      var pct = Math.round(s / 15 * 100);
+      html += '<div class="dim-result"><div class="name">' + d.name + '</div><div class="bar"><i style="width:' + pct + '%"></i></div><div class="sc">' + s + '/15</div></div>';
+      html += '<div class="advice"><b>' + d.name + '：</b>' + adviceFor(d.key, s) + '</div>';
+    });
+    html += '</div>';
+
+    html += '<div class="card"><h2 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px;">下一步（90 天行动建议）</h2>';
+    var weakest = DIMS.slice().sort(function (a, b) { return dimScores[a.key] - dimScores[b.key]; })[0];
+    html += '<div class="advice"><b>先攻最短板：「' + weakest.name + '」</b>（本次得分 ' + dimScores[weakest.key] + '/15）。90 天建议：第 1-2 周现状盘点，列出该维度所有未做到的具体事项；第 3-8 周选定 1-2 项做试点并拿到可量化的结果；第 9-12 周复盘沉淀，把试点变成制度。小步快跑，比大而全的转型方案更容易活下来。</div>';
+    html += '</div>';
+
+    html += '<div class="center"><button class="btn" id="btnRestart">重新评估</button></div>';
+
+    var rep = document.getElementById('report');
+    rep.innerHTML = html;
+    rep.classList.remove('hidden');
+    document.getElementById('quiz').classList.add('hidden');
+    document.getElementById('btnSubmit').parentElement.classList.add('hidden');
+    drawRadar(dimScores);
+    document.getElementById('btnRestart').addEventListener('click', function () {
+      answers = {};
+      rep.classList.add('hidden');
+      document.getElementById('quiz').classList.remove('hidden');
+      document.getElementById('btnSubmit').parentElement.classList.remove('hidden');
+      Array.prototype.forEach.call(document.querySelectorAll('.opt.sel'), function (o) { o.classList.remove('sel'); });
+      updateProgress();
+      window.scrollTo(0, 0);
+    });
+    window.scrollTo(0, 0);
+  }
+
+  function drawRadar(dimScores) {
+    var canvas = document.getElementById('radar');
+    var ctx = canvas.getContext('2d');
+    var cx = 210, cy = 180, R = 120;
+    var n = DIMS.length;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    function pt(i, r) {
+      var ang = -Math.PI / 2 + i * 2 * Math.PI / n;
+      return [cx + Math.cos(ang) * r, cy + Math.sin(ang) * r];
+    }
+
+    // 网格
+    [0.25, 0.5, 0.75, 1].forEach(function (f) {
+      ctx.beginPath();
+      for (var i = 0; i < n; i++) {
+        var p = pt(i, R * f);
+        if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.stroke();
+    });
+
+    // 轴线+标签
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = '#64748b';
+    for (var i = 0; i < n; i++) {
+      var p = pt(i, R);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(p[0], p[1]);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.stroke();
+      var lp = pt(i, R + 22);
+      ctx.textAlign = 'center';
+      ctx.fillText(DIMS[i].name.slice(0, 4), lp[0], lp[1] + 4);
+    }
+
+    // 数据面
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) {
+      var v = dimScores[DIMS[i].key] / 15;
+      var p = pt(i, R * v);
+      if (i === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(20,184,166,0.28)';
+    ctx.fill();
+    ctx.strokeStyle = '#0f766e';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 数据点
+    for (var i = 0; i < n; i++) {
+      var v = dimScores[DIMS[i].key] / 15;
+      var p = pt(i, R * v);
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f766e';
+      ctx.fill();
+    }
+  }
+
+  document.getElementById('btnSubmit').addEventListener('click', function () {
+    var done = Object.keys(answers).length;
+    if (done < total) return;
+    renderReport();
+  });
+
+  renderQuiz();
+})();
+</script>
+</body>
+</html>
