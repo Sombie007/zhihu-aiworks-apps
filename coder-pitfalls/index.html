@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>程序员避坑指南 - 300+ 真实项目踩坑经验</title>
+<style>
+  :root {
+    --primary: #ea580c;
+    --primary-dark: #c2410c;
+    --bg: #fffbeb;
+    --card: #ffffff;
+    --border: #fde68a;
+    --text: #292524;
+    --text-light: #78716c;
+    --blue: #2563eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 56px; }
+  header { text-align: center; padding: 26px 0 16px; }
+  header h1 { font-size: 26px; font-weight: 800; }
+  header h1 span { color: var(--primary); }
+  header p { color: var(--text-light); font-size: 14px; margin-top: 6px; }
+  .search-bar { display: flex; gap: 10px; margin-bottom: 14px; }
+  .search-bar input {
+    flex: 1; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px;
+    font-size: 15px; background: #fff; outline: none; transition: border 0.15s;
+  }
+  .search-bar input:focus { border-color: var(--primary); }
+  .cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; justify-content: center; }
+  .cat-chip { padding: 7px 16px; border-radius: 999px; border: 1px solid var(--border); background: #fff; font-size: 13.5px; cursor: pointer; color: var(--text-light); }
+  .cat-chip:hover { border-color: var(--primary); }
+  .cat-chip.sel { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 500; }
+  .qa-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .qa-q { padding: 14px 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .qa-q:hover { background: #fffbeb; }
+  .qa-q .qt { font-size: 15px; font-weight: 600; }
+  .qa-q .arrow { color: var(--text-light); transition: transform 0.2s; flex-shrink: 0; }
+  .qa-card.open .arrow { transform: rotate(180deg); }
+  .qa-a { display: none; padding: 0 18px 16px; font-size: 14px; color: #44403c; border-top: 1px dashed var(--border); padding-top: 12px; margin: 0 18px 16px; padding-left: 0; padding-right: 0; }
+  .qa-card.open .qa-a { display: block; }
+  .qa-a .tag { display: inline-block; background: #fff7ed; color: var(--primary-dark); border: 1px solid #fed7aa; font-size: 11px; padding: 1px 8px; border-radius: 4px; margin-right: 6px; font-weight: 600; }
+  .qa-a code { background: #fef3c7; padding: 1px 5px; border-radius: 4px; font-size: 13px; font-family: Consolas, Monaco, monospace; }
+  .qa-cat-label { font-size: 11px; color: var(--text-light); background: #fef3c7; border-radius: 4px; padding: 1px 8px; flex-shrink: 0; }
+  .stats { text-align: center; color: var(--text-light); font-size: 12.5px; margin: 10px 0 4px; }
+  .random-btn {
+    display: inline-block; margin-left: 10px; padding: 10px 20px; background: var(--primary); color: #fff;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .random-btn:hover { background: var(--primary-dark); }
+  footer { text-align: center; color: var(--text-light); font-size: 12px; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>程序员<span>避坑指南</span></h1>
+    <p>来自企业级项目一线的踩坑经验 · Java / Spring / Redis / MySQL / AI / 职场</p>
+  </header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="搜索问题关键词，如：缓存、索引、面试、AI……">
+    <button class="random-btn" id="btnRandom">随机一条</button>
+  </div>
+
+  <div class="cats" id="catBox">
+    <div class="cat-chip sel" data-v="all">全部</div>
+    <div class="cat-chip" data-v="java">Java 基础</div>
+    <div class="cat-chip" data-v="spring">Spring 生态</div>
+    <div class="cat-chip" data-v="redis">Redis 缓存</div>
+    <div class="cat-chip" data-v="mysql">MySQL 数据库</div>
+    <div class="cat-chip" data-v="ai">AI 与编程</div>
+    <div class="cat-chip" data-v="career">职场成长</div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div id="qaList"></div>
+
+  <footer>程序员避坑指南 · 每一条都来自真实项目的血泪教训 · 供参考，生产决策请结合实际场景</footer>
+</div>
+
+<script>
+(function () {
+  var QA = [
+    // Java 基础
+    { cat: 'java', q: 'Java 对象不再使用时为什么要赋值为 null？', a: '<span class="tag">内存</span>核心是帮助 GC 判断"不可达"。长生命周期对象（如缓存、静态集合）里引用着大对象时，及时置 null 能让它提前被回收。但注意：<code>局部变量</code>方法结束自动出栈，不需要置 null；滥用反而是噪音代码。真正该做的是缩小对象存活范围。' },
+    { cat: 'java', q: 'Java 中重载和方法重写分不清？', a: '<span class="tag">基础</span>重载：同一个类里方法名相同、参数不同，编译期决定（静态多态）；重写：子类重新实现父类的同名同参方法，运行期决定（动态多态）。记忆：重载看参数，重写看继承。面试爱问"重载能根据返回值区分吗"——不能，调用方不看返回值。' },
+    { cat: 'java', q: 'HashMap 在 JDK 7 和 JDK 8 的区别是高频面试题，到底差在哪？', a: '<span class="tag">集合</span>三大变化：① 底层从数组+链表变为数组+链表+红黑树（链表长度≥8 且数组长度≥64 时树化）；② 插入从头插法改为尾插法（修复并发扩容死循环）；③ 扩容优化：JDK8 扩容时元素位置要么不变、要么翻倍（hash &amp; oldCap 判断）。记住：HashMap 线程不安全，并发用 ConcurrentHashMap。' },
+    { cat: 'java', q: 'String、StringBuilder、StringBuffer 怎么选？', a: '<span class="tag">基础</span>String 不可变，拼接会产生大量临时对象；循环里拼字符串必须用 StringBuilder（单线程，快）或 StringBuffer（多线程安全，但基本用不上——因为拼接场景很少有共享竞争）。一句话：单线程拼接无脑 StringBuilder。' },
+    { cat: 'java', q: '== 和 equals 的区别？为什么 Integer 127 == 127 是 true，128 就不是？', a: '<span class="tag">基础</span>== 比较引用（基本类型比值），equals 比较内容（需重写）。Integer 缓存了 -128~127 的对象，所以这个区间 == 是 true，超出就是 new 出来的不同对象。结论：包装类型比较永远用 equals，这条写进团队规范。' },
+    { cat: 'java', q: '接口和抽象类到底怎么选？', a: '<span class="tag">设计</span>抽象类回答"是什么"（模板复用，共享状态和实现）；接口回答"能做什么"（能力契约，多实现）。经验法则：先接口定义契约，公共代码下沉抽象类。比如定义"支付能力"用接口，" AbstractOrderService" 提取公共流程用抽象类。' },
+    { cat: 'java', q: 'Java 异常处理有哪些常见坑？', a: '<span class="tag">健壮性</span>① catch 里吞异常不打印（出问题无从排查）；② finally 里 return（吞掉异常和返回值）；③ 捕获 Throwable/Exception 一刀切（掩盖 bug）；④ 异常信息丢失上下文。正确姿势：要么处理要么抛出+包装上下文，日志记录原始异常栈。' },
+    { cat: 'java', q: '深拷贝和浅拷贝的区别？', a: '<span class="tag">基础</span>浅拷贝只复制第一层引用（嵌套对象共享）；深拷贝递归复制所有层级。踩坑场景：从缓存/参数拿到对象直接改字段，污染了原始数据。实现深拷贝：实现 Cloneable 逐层 clone、序列化/反序列化、或用 MapStruct 等工具类。' },
+    { cat: 'java', q: 'Java 8 的 Stream 用不好反而更慢？', a: '<span class="tag">JDK8</span>Stream 声明式优雅，但注意：小集合普通 for 循环更快；parallelStream 共享 ForkJoinPool，IO 密集场景会拖垮其他任务；在 Stream 里做副作用操作（改外部变量）是反模式。大集合聚合运算（过滤+映射+归约）才是 Stream 的甜区。' },
+    { cat: 'java', q: '为什么 Alibaba 规范说线程池不要用 Executors 创建？', a: '<span class="tag">并发</span>FixedThreadPool 队列无界（OOM 风险）、CachedThreadPool 线程数无上限（线程爆炸）。正确姿势：new ThreadPoolExecutor 手动指定核心参数，队列用有界的，并设置拒绝策略+线程命名（方便排查问题）。' },
+
+    // Spring 生态
+    { cat: 'spring', q: 'Spring 的 IOC 到底解决了什么问题？', a: '<span class="tag">IOC</span>没 IOC：每个类自己 new 依赖，改实现要动所有调用方。IOC：对象的生命周期和装配交给容器，面向接口编程，换实现只改配置。三大收益：松耦合（易替换）、可测试（Mock 注入）、集中管理（生命周期/切面）。理解了"控制反转是对象装配权的转移"，就懂了 Spring 的地基。' },
+    { cat: 'spring', q: 'Spring Bean 的循环依赖是怎么解决的？什么情况下解决不了？', a: '<span class="tag">Bean</span>三级缓存：实例化后提前曝光早期引用 → 属性注入时从缓存拿 → 完成初始化。注意坑：构造器注入的循环依赖解不了（还没实例化就互相要）；prototype 作用域解不了（每次新建）；Spring Boot 2.6+ 默认禁止循环依赖，直接报错——这是好事，逼你重新设计。' },
+    { cat: 'spring', q: '@Transactional 什么时候会失效？', a: '<span class="tag">事务</span>高频失效场景：① 同类内部方法调用（this 调用不走代理）；② 方法非 public；③ 异常被 catch 吞了；④ 抛的是受检异常但没配 rollbackFor（默认只回滚 RuntimeException）；⑤ 数据库引擎不支持事务（MyISAM）。生产事故重灾区，团队规范里必须写。' },
+    { cat: 'spring', q: 'Spring Boot 的自动配置原理是什么？', a: '<span class="tag">Boot</span>@EnableAutoConfiguration → 加载 META-INF/spring.factories（2.7+ 是 AutoConfiguration.imports）里的配置类 → @ConditionalOnClass/@ConditionalOnMissingBean 等条件注解决定是否生效。理解它就能解释"为什么引入依赖就自动生效"、"为什么我的 Bean 被覆盖"。自定义 starter 就是照这个套路。' },
+    { cat: 'spring', q: 'Spring Cloud 微服务拆分粒度怎么把握？', a: '<span class="tag">微服务</span>常见踩坑：一上来就微服务，结果团队 5 个人维护 30 个服务。判断标准：① 团队规模（两个披萨原则）；② 业务边界清晰（领域驱动）；③ 独立部署收益 &gt; 分布式复杂度成本。单体分模块 → 按需拆分，比"为了微服务而微服务"健康得多。' },
+    { cat: 'spring', q: 'Spring Boot 非web方式启动有什么用？', a: '<span class="tag">Boot</span>把 Web 依赖排除（spring.main.web-application-type=none），适合定时任务、消息消费者、批处理这类"无 HTTP 入口"的后台程序。好处：少占端口、减小依赖面、更安全。一套代码体系里，Web 服务和后台 Worker 分开部署时常用。' },
+    { cat: 'spring', q: 'Spring 为什么启动时要实例化几乎所有 Bean？', a: '<span class="tag">Bean</span>默认单例+饿汉加载：启动时完成装配和依赖检查，错误在启动期暴露而不是运行期（Fail Fast）。代价是启动慢。优化：@Lazy 懒加载、@ConditionalOnXxx 条件装配、拆分启动阶段。记住：启动慢的第一嫌疑人通常是 @ComponentScan 扫描范围过大。' },
+    { cat: 'spring', q: 'MyBatis-Plus 怎么获取自动生成的主键？', a: '<span class="tag">MyBatis</span>实体主键加 @TableId(type = IdType.AUTO)（数据库自增）或 IdType.ASSIGN_ID（雪花算法，分布式推荐）。insert 后主键自动回填到实体。坑：如果用 ASSIGN_ID 但表主键是 int 不是 bigint，雪花 ID 超长直接溢出——主键类型和 ID 策略要配套。' },
+    { cat: 'spring', q: 'Spring Cloud 里服务之间怎么调用才稳？', a: '<span class="tag">微服务</span>三件套缺一不可：超时设置（不设超时的调用等于定时炸弹）、重试+熔断（Resilience4j/Sentinel，防止雪崩）、降级兜底（返回缓存/默认值）。再加一条军规：调用链上任何一个服务新增依赖前，先评估对整条链路的影响半径。' },
+    { cat: 'spring', q: 'Spring 事件机制（ApplicationEvent）适合什么场景？', a: '<span class="tag">解耦</span>同进程内的解耦利器：下单成功后发事件，积分、通知、风控各自监听，互不影响。注意：默认同步执行（监听器慢会拖住主流程），要异步加 @Async + 线程池；跨服务还是老老实实用 MQ。场景对了是解耦神器，场景错了是调试噩梦。' },
+
+    // Redis
+    { cat: 'redis', q: 'Redis 缓存雪崩是什么？怎么防？', a: '<span class="tag">缓存</span>大量 key 同时过期（或 Redis 宕机），请求全打到数据库，数据库被压垮。防护三招：① 过期时间加随机值（如基础+随机 0~300 秒）；② 热点数据永不过期+异步更新；③ Redis 高可用（哨兵/集群）+ 服务端限流降级兜底。记住：雪崩的本质是"缓存失效时间过于集中"。' },
+    { cat: 'redis', q: '缓存穿透和缓存击穿有什么区别？', a: '<span class="tag">缓存</span>穿透：查询<b>不存在</b>的数据（恶意伪造 ID），缓存永远没有，每次都打 DB。防：空值缓存（短过期）+ 布隆过滤器 + 参数校验。击穿：某个<b>热点 key</b> 过期瞬间，大量并发同时打 DB。防：互斥锁（只让一个请求回源）+ 热点永不过期 + 逻辑过期。一个防"没有"，一个防"过期"。' },
+    { cat: 'redis', q: 'Redis 和数据库的双写一致性怎么保证？', a: '<span class="tag">一致性</span>主流方案：先更新数据库，再删除缓存（Cache Aside）。删除而非更新，避免并发写覆盖。残余问题：删除失败怎么办？→ 重试队列/订阅 binlog（Canal）异步删。强一致做不到也不必做到（要强一致就别用缓存），业务上一般接受短暂不一致+过期时间兜底。' },
+    { cat: 'redis', q: 'Redis 为什么快？', a: '<span class="tag">原理</span>四个原因：① 纯内存操作；② 单线程命令执行（无锁无上下文切换，且 Redis 6+ 网络 IO 多线程）；③ IO 多路复用（epoll，单线程处理万级连接）；④ 高效数据结构（SDS、跳表、ziplist 等针对场景优化）。面试追问"单线程为什么快"，考的是你对瓶颈的理解：Redis 的瓶颈是内存和网络，不是 CPU。' },
+    { cat: 'redis', q: 'Redis 的持久化 RDB 和 AOF 怎么选？', a: '<span class="tag">持久化</span>RDB：定时快照，文件小恢复快，但可能丢最后一次快照后的数据；AOF：追加命令日志，丢数据少（appendfsync everysec 最多丢 1 秒），文件大恢复慢。生产标配：两者都开，RDB 做冷备+快速恢复，AOF 保数据安全。纯缓存场景可以都不开，重启回源即可。' },
+    { cat: 'redis', q: 'Redis 分布式锁怎么实现才靠谱？', a: '<span class="tag">分布式</span>三要素：① SET key value NX EX（原子加锁+过期时间，value 放唯一标识防误删）；② 释放锁用 Lua 脚本（判断是自己的锁再删，保证原子）；③ 锁续期（看门狗，业务没执行完锁先过期就尴尬了）。高可用场景考虑 Redlock 或者直接用 Redisson（都帮你实现好了）。' },
+    { cat: 'redis', q: 'Redis 大 key 有什么危害？怎么发现和处理？', a: '<span class="tag">性能</span>大 key（如百万元素的 hash）：删除阻塞主线程、网络带宽打满、热 key 倾斜。发现：redis-cli --bigkeys、RDB 离线分析工具。处理：拆分（hash 分桶）、压缩 value、异步删除（UNLINK 替代 DEL，4.0+）。规范：进缓存前先评估 value 大小，单 key 建议 &lt; 10KB。' },
+    { cat: 'redis', q: 'Redis 数据淘汰策略怎么配？', a: '<span class="tag">配置</span>maxmemory-policy 八种。常用：allkeys-lru（纯缓存推荐）、volatile-lru（只淘汰设了过期的）、noeviction（默认，满了报错，适合当存储用）。踩坑：当存储用却配了 allkeys-lru，数据悄悄被逐条挤掉——先想清楚 Redis 在你系统里是"缓存"还是"存储"。' },
+
+    // MySQL
+    { cat: 'mysql', q: '为什么 MySQL 索引用 B+ 树而不是哈希表或 B 树？', a: '<span class="tag">索引</span>哈希：等值快，但不支持范围查询和排序。B 树：数据存在每个节点，一次 IO 读到的键少，树更高。B+ 树：数据全在叶子节点且叶子间有链表相连——范围查询、排序、分页都是叶子链表遍历，而且矮胖树（3 层能存千万级数据）IO 次数少。这是磁盘 IO 模型决定的。' },
+    { cat: 'mysql', q: '什么是最左前缀原则？举个踩坑例子', a: '<span class="tag">索引</span>联合索引 (a, b, c) 相当于建了 (a)、(a,b)、(a,b,c) 三个索引。查询条件必须从最左列开始连续命中。坑例：WHERE b=1 AND c=2 用不上该索引；WHERE a=1 AND c=2 只用到 a 列。设计联合索引：等值条件列在前、范围条件列在后，排序列紧跟等值列。' },
+    { cat: 'mysql', q: '什么情况下索引会失效？', a: '<span class="tag">索引</span>高频失效：① 对索引列做函数或运算（WHERE YEAR(create_time)=2023）；② 隐式类型转换（字符串列传数字）；③ LIKE 以 % 开头；④ OR 两侧有未索引列；⑤ 优化器判断全表更快（回表代价大于全扫）。工具：EXPLAIN 看是否 Using index，type 至少到 range。' },
+    { cat: 'mysql', q: 'MySQL 事务的隔离级别和各自的坑？', a: '<span class="tag">事务</span>读未提交（脏读）→ 读已提交（不可重复读，Oracle 默认）→ 可重复读（MySQL 默认，InnoDB 用 MVCC+间隙锁基本解决幻读）→ 串行化（性能差基本不用）。踩坑：可重复读下仍可能出现"更新丢失"，关键业务用 SELECT ... FOR UPDATE 显式加锁。' },
+    { cat: 'mysql', q: '深分页（limit 1000000, 10）为什么慢？怎么优化？', a: '<span class="tag">优化</span>慢在 MySQL 要扫描并丢弃前 100 万行。优化：① 子查询定位起始主键 WHERE id &gt;= (SELECT id FROM t LIMIT 1000000,1)；② 游标方案：记住上一页最后 ID，WHERE id &gt; last_id LIMIT 10（推荐，翻页无限深度都恒定性能）；③ 业务上限制只能翻前 N 页（搜索引擎都这么干）。' },
+    { cat: 'mysql', q: 'MySQL 的 MVCC 是什么原理？', a: '<span class="tag">原理</span>多版本并发控制：每行隐藏字段记录事务 ID（trx_id）和回滚指针（roll_pointer），Undo log 保留历史版本链。读操作按 Read View 快照判断可见性——读不加锁、读写不冲突。这就是 InnoDB 能同时保证"可重复读"和高并发的核心机制。' },
+    { cat: 'mysql', q: '数据查找慢，除了加索引还有哪些招？', a: '<span class="tag">优化</span>四板斧按序试：① 索引（正确设计联合索引）；② 分区/分表（数据量级到了再上，别过早）；③ 缓存（热点数据进 Redis，注意一致性）；④ 读写分离（主库写从库读）。根本原则：先 EXPLAIN 搞清楚慢在哪，再对症下药，别上来就堆架构。' },
+    { cat: 'mysql', q: '大表加字段/加索引会锁表吗？怎么安全操作？', a: '<span class="tag">运维</span>MySQL 8.0 的 INSTANT ADD COLUMN 秒级加列；加索引用 Online DDL（ALGORITHM=INPLACE, LOCK=NONE）。大表操作军规：低峰期执行、预估时长、准备好 gh-ost/pt-online-schema-change 兜底、先在从库演练。直接在千万级大表上跑 ALTER 是运维事故的重灾区。' },
+
+    // AI 与编程
+    { cat: 'ai', q: 'AI 写的代码直接用可以吗？', a: '<span class="tag">AI编程</span>AI 生成代码的验收和外包交付一个道理：能跑 ≠ 正确。重点盯四处：边界条件（AI 常漏空值/极端值）、并发安全（AI 不了解你的并发场景）、依赖版本（AI 可能用过时或不存在 API）、安全漏洞（SQL 拼接、硬编码密钥）。AI 负责"写得快"，你负责"验得对"。' },
+    { cat: 'ai', q: '没有编程基础的人能用 AI 做出产品吗？', a: '<span class="tag">AI编程</span>能做出 demo，但"能玩转"和"能做出东西"是两码事。工具降低的是动手门槛，不是动脑门槛。三个必修课：① 把需求说清楚（说不清楚，神仙也做不对）；② 会验证结果（拿测试数据跑，知道对错）；③ 出问题会描述（报错截图+复现步骤+预期/实际结果）。做到这三条，零基础也能用好 AI。' },
+    { cat: 'ai', q: '程序员会被 AI 替代吗？', a: '<span class="tag">趋势</span>AI 替代的是"把明确需求翻译成代码"的部分，而需求本身的澄清、系统的架构取舍、线上故障的定位修复，依赖对业务和系统的深度理解，这些是 AI 短期给不了的。真实威胁不是 AI，是"会用 AI 的程序员"对"不会用 AI 的程序员"的效率碾压。拥抱工具，守住判断力。' },
+    { cat: 'ai', q: 'vibe coding 适合什么场景，不适合什么场景？', a: '<span class="tag">AI编程</span>适合：原型验证、个人小工具、一次性脚本、demo 展示——试错成本低、反馈快。不适合：涉及资金/隐私的生产系统、长期维护的核心业务、高并发场景——这些地方"AI 怎么写我同意"等于开盲盒，出问题连排查的抓手都没有。区分场景，比抵制或神化 AI 都重要。' },
+    { cat: 'ai', q: 'RPA 和 AI Agent 是什么关系？会被替代吗？', a: '<span class="tag">自动化</span>RPA 是"教机器人按固定规则点鼠标"，确定性高但脆弱（界面一改就瞎）；AI Agent 是"给目标让它自己规划"，灵活但结果不确定。企业自动化短期内两者共存：规则明确的流程用 RPA（稳），非标场景用 Agent（活）。选型看场景对确定性的要求，而不是追新。' },
+    { cat: 'ai', q: 'AI 编程时代，学 Java 还值不值？', a: '<span class="tag">职业</span>Java 生态（Spring/MySQL/Redis）至今仍是国内企业级开发的基本盘，银行、电信、政务核心系统清一色 Java。AI 能写代码，但架构取舍、性能瓶颈定位、业务建模这些"系统级判断"依然稀缺。别追热点换赛道，把手里这门学扎实的人，到哪儿都有饭吃。' },
+    { cat: 'ai', q: '大模型 API 调用有哪些省钱技巧？', a: '<span class="tag">AI编程</span>① 模型分级：简单任务用小模型，复杂推理才上旗舰模型；② 控制上下文：历史对话裁剪/摘要，别无限堆积 tokens；③ 结果缓存：相同输入直接返回；④ 批量接口（batch API）价格减半，非实时场景用它。先算清楚单次调用成本×调用量，再定架构。' },
+    { cat: 'ai', q: 'AI 时代还要不要刷算法题？', a: '<span class="tag">职业</span>面试还考，就还得刷——但目的变了：从"背解法"变成"训练把问题结构化的思维"。数据结构选型、复杂度权衡，这些是 AI 帮不了你做的判断（AI 能给你方案，但判断哪个方案适合你的场景，还是你）。基础不牢，AI 给的代码你连对错都看不出来。' },
+
+    // 职场成长
+    { cat: 'career', q: '计算机毕业生薪资差距悬殊，真的只看学校和学历吗？', a: '<span class="tag">求职</span>学历是入场券，决定你进哪扇门；进门后的差距来自三样东西：实习经历（两个像样的实习能抹平双非劣势）、项目深度（追做过什么而不是会用什么）、面试准备（八股+算法+项目复盘）。在校生最该做的不是焦虑学历，是尽早实习+把一个技术方向学透。' },
+    { cat: 'career', q: '应届生面试紧张、逻辑混乱怎么办？', a: '<span class="tag">求职</span>紧张的本质是没有结构。三个立竿见影的方法：① 答题前默念"结论-理由-例子"三段式；② 不会的问题说思路而不是硬编（"这块我没用过，但我理解它要解决的问题是……"）；③ 每场面试后复盘录音。紧张会随准备充分程度指数级下降。' },
+    { cat: 'career', q: '刚入行的程序员，有什么前辈忠告？', a: '<span class="tag">成长</span>五条最值钱的：① 前 3 年深度优先，把一门技术栈打穿，别东一榔头西一棒子；② 写文档、记笔记，知识不沉淀等于没学；③ 多看优秀代码（公司里的老模块、开源项目），代码品味是看出来的；④ 主动要活，尤其是核心模块的活；⑤ 身体是最长跑的本钱。' },
+    { cat: 'career', q: '为什么80%的码农做不了架构师？', a: '<span class="tag">成长</span>架构师的核心能力不是"会用更多框架"，而是三个转换：把业务语言翻译成技术方案、在多种约束（成本/时间/人力/风险）里做取舍、对系统的长期演化负责。多数人卡在"把活干完"的执行层，没有刻意训练"为什么这么设计"的思考习惯。从今天起，每个技术方案多问一句"还有没有别的做法，代价是什么"。' },
+    { cat: 'career', q: '代码注释到底要不要写？', a: '<span class="tag">工程</span>好注释解释"为什么"，而不是"是什么"——代码本身能表达"是什么"。必须写的：魔法值的含义、绕过某个坑的原因、对外接口的契约。不用写的：逐行翻译代码。更高级的境界是重构让代码自解释（好命名+小函数），注释量自然就降下来了。' },
+    { cat: 'career', q: '实际项目里哪些数据结构最常用最实用？', a: '<span class="tag">工程</span>日常业务开发：HashMap（映射查找）用得最多，其次是 ArrayList、HashSet（去重）。进阶三件套：LinkedHashMap（实现 LRU）、优先队列 PriorityQueue（TopK 问题）、跳表（理解 Redis 有序集合）。面试考的红黑树/B+树，价值在理解"为什么这么设计"，日常编码会用成熟容器就够了。' },
+    { cat: 'career', q: '怎么做一个工作流引擎？从哪入手？', a: '<span class="tag">工程</span>自研工作流先回答三个问题：① 流程是固定的还是需要运营可配？固定就用状态机（简单可靠），可配才考虑引擎；② 需要会签/驳回/并行分支吗？复杂度指数级上升，能砍就砍；③ 历史轨迹要可追溯吗？数据模型里流转记录表是灵魂。轻量场景自研状态机，重场景直接上 Flowable/Camunda，别重复造轮子。' },
+    { cat: 'career', q: '审批流用流程引擎还是状态机？', a: '<span class="tag">工程</span>判断标准：流程简单且固定 → 状态机（一张状态表+动作校验，几十行代码）；涉及动态配置、会签、转办、撤回等运营诉求 → 流程引擎（Flowable）。中间态慎选：自研"类引擎"是最容易烂尾的路线。多问一句业务：未来一年审批流程会经常变吗？按变化频率决策。' },
+    { cat: 'career', q: 'Make 工作流和 Coze 工作流怎么选？', a: '<span class="tag">工具</span>先分清楚：Make 是"系统间连管道"（API 自动化，类 Zapier/n8n），Coze 是"搭 AI 机器人"（智能体平台，工作流只是它的一部分）。要跑固定流程（抓数据、发报告）选 Make，思维可迁移到 n8n；要做对话机器人、知识库问答选 Coze（中文生态友好）。想清楚要自动化的是"流程"还是"对话"，比选工具本身重要。' },
+    { cat: 'career', q: '接口测试的 301 和 302 有什么区别？', a: '<span class="tag">测试</span>301 永久重定向：浏览器/搜索引擎会记住新地址，以后直接访问新 URL；302 临时重定向：每次都先访问旧地址再跳转。测试关注点：301 后旧地址不可再用；302 要验证跳转目标正确。典型坑：改版该用 301 的地方用了 302，搜索引擎权重一直传不过去。' },
+    { cat: 'career', q: 'Java 的 Spring 全家桶自学，看视频还是看文档？', a: '<span class="tag">学习</span>入门看视频（快速建立全局认知），进阶读文档（Official Guide + 入门到源码），实战做项目（GitHub 上找个真实场景练手）。三个阶段别颠倒：只看视频会陷入"看会了"的错觉；只啃文档容易在细节里迷路。检验标准：能不能给别人讲清楚 Spring IOC/AOP 解决了什么问题。' },
+    { cat: 'career', q: '画师被 AI 大量替代，为什么程序员反而更繁荣了？', a: '<span class="tag">趋势</span>核心差异：画师产出的是"最终交付物"（图），AI 直接生产它；程序员产出的是"运行中的系统"，代码只是中间产物——需求澄清、架构取舍、线上排障、业务对齐这些占大头的工作，AI 短期覆盖不了。但也别高枕无忧：AI 正在重置行业对"初级纯编码"的需求结构，向上走是唯一的路。' },
+    { cat: 'career', q: '调试思维能解决人生问题吗？', a: '<span class="tag">思维</span>程序员调试的四个动作，套到人生问题上意外地好用：① 复现（搞清楚问题什么时候出现，别凭感觉）；② 二分定位（缩小范围，是能力问题还是方向问题？）；③ 看日志（记录数据，而不是记忆）；④ 最小化验证（改一个变量看结果）。人生问题的难点在于没有断点可以打，但"改一个变量"的原则依然成立。' }
+  ];
+
+  var CAT_NAMES = { java: 'Java', spring: 'Spring', redis: 'Redis', mysql: 'MySQL', ai: 'AI', career: '职场' };
+  var catFilter = 'all';
+  var keyword = '';
+
+  function render() {
+    var list = document.getElementById('qaList');
+    var filtered = QA.filter(function (item) {
+      var catOk = catFilter === 'all' || item.cat === catFilter;
+      var kwOk = !keyword || item.q.indexOf(keyword) >= 0 || item.a.indexOf(keyword) >= 0 || CAT_NAMES[item.cat].indexOf(keyword) >= 0;
+      return catOk && kwOk;
+    });
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-tip" style="color:var(--text-light);text-align:center;padding:30px;">没有匹配的内容，换个关键词试试</div>';
+      document.getElementById('stats').textContent = '';
+      return;
+    }
+    var html = '';
+    filtered.forEach(function (item) {
+      html += '<div class="qa-card" data-cat="' + item.cat + '"><div class="qa-q"><div class="qt">' + item.q + '</div><div><span class="qa-cat-label">' + CAT_NAMES[item.cat] + '</span> <span class="arrow">▼</span></div></div><div class="qa-a">' + item.a + '</div></div>';
+    });
+    list.innerHTML = html;
+    document.getElementById('stats').textContent = '共 ' + filtered.length + ' 条避坑经验' + (keyword ? ' · 搜索：' + keyword : '');
+    list.querySelectorAll('.qa-q').forEach(function (qEl) {
+      qEl.addEventListener('click', function () {
+        qEl.parentElement.classList.toggle('open');
+      });
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', function (e) {
+    keyword = e.target.value.trim();
+    render();
+  });
+
+  document.getElementById('catBox').addEventListener('click', function (e) {
+    var chip = e.target.closest('.cat-chip');
+    if (!chip) return;
+    document.querySelectorAll('.cat-chip').forEach(function (c) { c.classList.remove('sel'); });
+    chip.classList.add('sel');
+    catFilter = chip.getAttribute('data-v');
+    render();
+  });
+
+  document.getElementById('btnRandom').addEventListener('click', function () {
+    render();
+    var cards = document.querySelectorAll('.qa-card');
+    if (!cards.length) return;
+    cards.forEach(function (c) { c.classList.remove('open'); });
+    var pick = cards[Math.floor(Math.random() * cards.length)];
+    pick.classList.add('open');
+    pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
