@@ -804,7 +804,7 @@
   /* ---------- 导出报告图片（SVG → canvas → PNG） ---------- */
   /* 画布离线渲染时读不到 CSS 变量，这里按 tokens.css 浅色主题取值（仅此一处写死色值） */
   var PALETTE = {
-    bg: "#fbfbfc", panel: "#ffffff", accent: "#9d3b5c", accentSoft: "#f4e7eb",
+    bg: "#fbfbfc", panel: "#ffffff", accent: "#9d3b5c", accentSoft: "#f4e7eb", onAccent: "#ffffff",
     text: "#1b1f27", text2: "#555d6b", text3: "#6b7484", border: "#dce0e7"
   };
   var EXPORT_W = 1000;
@@ -815,6 +815,18 @@
   function line(x, y, text, size, color, weight, anchor) {
     return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" fill="' + color + '" font-weight="' + (weight || 400) + '"' +
       (anchor ? ' text-anchor="' + anchor + '"' : "") + ">" + escText(text) + "</text>";
+  }
+
+  /** 长句按字数折行。画布上量不了文字宽度：全角字符按 1 个字宽估（字号 12 时 70 字约 840px，小于内容宽 888px） */
+  function wrapLine(prefix, text, maxChars) {
+    var out = [];
+    var rest = prefix + text;
+    while (rest.length > maxChars) {
+      out.push(rest.slice(0, maxChars));
+      rest = rest.slice(maxChars);
+    }
+    out.push(rest);
+    return out;
   }
 
   /** 维度得分条 */
@@ -863,6 +875,17 @@
       s += line(lx, ly, dims[n].name + " 均分 " + C.avgText(dims[n].scores), 13, PALETTE.text, 600, anchors[n]);
     });
     return s;
+  }
+
+  /** 标志砖（导出用）：图形与 design/brand/logos.html 里的 #logo-ai-agent-readiness 一致，改标志时两处一起改 */
+  function exportLogo(x, y, size) {
+    return '<g transform="translate(' + x + " " + y + ") scale(" + (size / 32).toFixed(4) + ')">' +
+      '<rect x="1" y="1" width="30" height="30" rx="8.5" fill="' + PALETTE.accent + '"/>' +
+      '<path d="M16 5.2 25.4 10.6v10.8L16 26.8 6.6 21.4V10.6Z" fill="none" stroke="' + PALETTE.onAccent + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M16 9.8 21.4 12.9v6.2L16 22.2l-5.4-3.1v-6.2Z" fill="none" stroke="' + PALETTE.onAccent + '" stroke-width="1.7" stroke-linejoin="round" opacity="0.72"/>' +
+      '<path d="M16 16l6.4-3.6" fill="none" stroke="' + PALETTE.onAccent + '" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<circle cx="16" cy="16" r="1.8" fill="' + PALETTE.onAccent + '"/>' +
+      "</g>";
   }
 
   function buildExportSvg(r, date) {
@@ -942,9 +965,28 @@
     y += 12;
     parts.push(line(pad, y, "复测提示：" + D.retestNote, 12, PALETTE.text3));
     y += 22;
-    parts.push(line(pad, y, "说明：" + D.disclaimer, 12, PALETTE.text3));
+    var noteLines = wrapLine("说明：", D.disclaimer, 70);
+    noteLines.forEach(function (t, i) {
+      parts.push(line(pad, y + i * 20, t, 12, PALETTE.text3));
+    });
+    y += (noteLines.length - 1) * 20;
 
-    var H = y + pad;
+    /* 品牌条：这张图会被转发出去，底部写清是谁做的、去哪儿找 */
+    var brand = D.brandFooter;
+    if (brand) {
+      y += 50;
+      parts.push('<line x1="' + pad + '" y1="' + y + '" x2="' + (pad + contentW) + '" y2="' + y + '" stroke="' + PALETTE.border + '"/>');
+      var logoSize = 40;
+      var top = y + 20;
+      parts.push(exportLogo(pad, top, logoSize));
+      var tx = pad + logoSize + 16;
+      parts.push(line(tx, top + 15, brand.name, 15, PALETTE.text, 600));
+      parts.push(line(tx, top + 37, brand.intro, 13, PALETTE.text2));
+      parts.push(line(tx, top + 58, brand.link, 12, PALETTE.text3));
+      y = top + 78;
+    }
+
+    var H = y + (brand ? pad - 16 : pad);
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + EXPORT_W + '" height="' + H + '" viewBox="0 0 ' + EXPORT_W + " " + H + '" font-family="MiSans, PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">' +
       '<rect width="' + EXPORT_W + '" height="' + H + '" fill="' + PALETTE.bg + '"/>' +
       parts.join("") +
