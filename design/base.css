@@ -1,0 +1,451 @@
+/* ============================================================================
+   基础样式：重置、排版、应用骨架（侧栏 + 工具栏 + 内容区）
+   ========================================================================== */
+
+/* ---------- 重置 ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "tnum" 0; /* 等宽数字按需开启（.num） */
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* 组件库会给 .btn 等元素设置 display，会盖掉 hidden 属性，这里兜底 */
+[hidden] {
+  display: none !important;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 { font-size: var(--fs-2xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-md); }
+
+p {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--accent-tint-strong);
+}
+
+/* ---------- 键盘焦点：所有可交互元素都有可见焦点环 ---------- */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* ---------- 图标：全站统一 Heroicons 1.5px 描边 ---------- */
+.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon--sm { width: 16px; height: 16px; }
+.icon--lg { width: 24px; height: 24px; }
+.icon--xl { width: 32px; height: 32px; }
+
+/* ---------- 品牌标志（见 brand/logos.html 的 symbol） ---------- */
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.brand-mark--lg { width: 40px; height: 40px; }
+.brand-mark--xl { width: 64px; height: 64px; }
+
+/* ---------- 应用骨架 ---------- */
+.app {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.app__sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  height: 100dvh;
+  padding: var(--sp-4);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.app__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+}
+
+/* 顶部工具栏 */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: var(--topbar-h);
+  padding: var(--sp-2) var(--sp-6);
+  background: color-mix(in oklch, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar__title {
+  flex: 0 1 auto;   /* 允许收缩，窄屏下省略号截断，不把右侧操作区顶出屏幕 */
+  min-width: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__spacer { flex: 1; min-width: 0; }
+.topbar__actions { display: flex; align-items: center; gap: var(--sp-2); flex: none; }
+
+/* 内容区 */
+.content {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.content--wide { max-width: none; }
+.content--narrow { max-width: 760px; }
+
+/* ---------- 侧栏 ---------- */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  color: var(--text-1);
+}
+
+.sidebar__brand:hover {
+  text-decoration: none;
+  background: var(--surface-hover);
+}
+
+.sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: var(--lh-snug);
+}
+
+.sidebar__brand-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__brand-family {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav__group + .nav__group { margin-top: var(--sp-4); }
+
+.nav__label {
+  padding: 0 var(--sp-3);
+  margin-bottom: var(--sp-1);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+
+.nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: var(--control-h);
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  font-size: var(--fs-base);
+  font-weight: 400;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+/* 等宽字体放进小字号的标签 / 提示里时跟随字号，避免低于 12px 下限 */
+.label .mono,
+.hint .mono {
+  font-size: inherit;
+}
+
+.nav__item:hover {
+  background: var(--surface-hover);
+  color: var(--text-1);
+  text-decoration: none;
+}
+
+.nav__item:active { background: var(--border); }
+
+/* 当前项：颜色 + 字重 + 指示条，灰度下也可辨认 */
+.nav__item[aria-current="page"],
+.nav__item[aria-selected="true"] {
+  background: var(--surface-raised);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--shadow-1);
+}
+
+.nav__item-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav__count {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.sidebar__maker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-2);
+}
+
+/* ---------- 滚动条 ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-control) transparent;
+}
+
+/* ---------- 跳转链接 ---------- */
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: var(--sp-4);
+  z-index: 100;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--r-md);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+  text-decoration: none;
+}
+
+/* ---------- 响应式：窄屏时侧栏变成顶部横条 ---------- */
+@media (max-width: 960px) {
+  .app { display: block; }
+
+  .app__sidebar {
+    position: static; /* 窄屏下只让工具栏吸顶，页头随页面滚走，少占一屏 */
+    height: auto;
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-3) var(--sp-1);
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+    background: var(--bg-sidebar);
+  }
+
+  .sidebar__brand { padding: var(--sp-1) var(--sp-2); }
+
+  .nav {
+    flex-direction: row;
+    align-items: center; /* 活动项不再被撑满整行高度 */
+    gap: var(--sp-1);
+    margin-top: 2px;
+    padding-bottom: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 工具箱互链容器并入同一行 */
+  .nav [data-toolbox] { display: contents; }
+
+  .nav::-webkit-scrollbar { display: none; }
+
+  .nav__group { display: contents; }
+  .nav__group + .nav__group { margin-top: 0; }
+  .nav__label { display: none; }
+
+  .nav__item {
+    width: auto;
+    flex: none;
+    min-height: 40px;
+    padding: 0 var(--sp-3);
+  }
+
+  .nav__item .icon { display: none; }
+
+  .sidebar__footer {
+    /* 手机上保留主题切换入口：品牌行右侧变成 作者 + 主题按钮 */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    font-size: var(--fs-sm);
+    color: var(--text-3);
+  }
+
+  .sidebar__footer [data-maker] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* 窄屏触控目标统一提到 44px */
+  .chip { min-height: 44px; }
+  .segmented__btn { min-height: 44px; }
+  .select { min-height: 44px; }
+  .nav__item { min-height: 44px; }
+
+  .topbar {
+    top: 0;
+    padding: var(--sp-2) var(--sp-4);
+  }
+
+  .content { padding: var(--sp-4); gap: var(--sp-4); }
+}
+
+/* ---------- 减少动态效果 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

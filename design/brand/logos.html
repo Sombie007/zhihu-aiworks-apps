@@ -1,0 +1,47 @@
+<!--
+  折向东 · 工具箱 — 标志 sprite
+  系列标志：一条折线（Z）一路向东（箭头）；每个工具 = 圆角方砖 + 一句话说得清的符号
+  标准：纯黑白可用 · 16px 可辨认 · 不依赖渐变
+  用法：<svg class="brand-mark" aria-hidden="true"><use href="#logo-table-cleaner"/></svg>
+-->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true" focusable="false">
+
+  <!-- 系列标志：折线向东。顶点按顺时针：上横杠 → 斜线右缘 → 下横杠 → 箭头 → 斜线左缘 → 上横杠底 -->
+  <symbol id="logo-toolbox" viewBox="3 3 30 30">
+    <path fill="currentColor" d="M5 6H27V11L14.2 21H22V17L31 23.5L22 30V26H5V21L17.8 11H5V6Z"/>
+  </symbol>
+
+  <!-- 表格清洗：格子 + 对勾 = 清洗干净 -->
+  <symbol id="logo-table-cleaner" viewBox="0 0 32 32">
+    <rect x="1" y="1" width="30" height="30" rx="8.5" fill="var(--accent, #0f766e)"/>
+    <rect x="7" y="7" width="8" height="8" rx="2" fill="var(--on-accent, #fff)"/>
+    <rect x="18" y="7" width="8" height="8" rx="2" fill="var(--on-accent, #fff)" opacity="0.55"/>
+    <rect x="7" y="18" width="8" height="8" rx="2" fill="var(--on-accent, #fff)" opacity="0.55"/>
+    <path d="M17.4 22.2l2.9 2.9 6.4-6.6" fill="none" stroke="var(--on-accent, #fff)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <!-- 数字化成熟度自评：四级台阶，一级比一级高 -->
+  <symbol id="logo-digital-maturity" viewBox="0 0 32 32">
+    <rect x="1" y="1" width="30" height="30" rx="8.5" fill="var(--accent, #2e7d46)"/>
+    <rect x="6" y="19.5" width="3.8" height="6.5" rx="1.2" fill="var(--on-accent, #fff)" opacity="0.5"/>
+    <rect x="11.4" y="14.5" width="3.8" height="11.5" rx="1.2" fill="var(--on-accent, #fff)" opacity="0.67"/>
+    <rect x="16.8" y="9.5" width="3.8" height="16.5" rx="1.2" fill="var(--on-accent, #fff)" opacity="0.84"/>
+    <rect x="22.2" y="4.5" width="3.8" height="21.5" rx="1.2" fill="var(--on-accent, #fff)"/>
+  </symbol>
+
+  <!-- PMP 助手：甘特条 + 里程碑菱形 -->
+  <symbol id="logo-pmp-assistant" viewBox="0 0 32 32">
+    <rect x="1" y="1" width="30" height="30" rx="8.5" fill="var(--accent, #1f5fae)"/>
+    <rect x="6" y="8" width="11" height="4.2" rx="1.4" fill="var(--on-accent, #fff)" opacity="0.6"/>
+    <rect x="11" y="14" width="12" height="4.2" rx="1.4" fill="var(--on-accent, #fff)" opacity="0.8"/>
+    <path d="M6 24h14.6" fill="none" stroke="var(--on-accent, #fff)" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M23.6 19.9l4.1 4.1-4.1 4.1-4.1-4.1z" fill="var(--on-accent, #fff)"/>
+  </symbol>
+
+  <!-- 程序员避坑指南：一对代码尖括号，中间一个对勾 = 在代码里把坑排掉 -->
+  <symbol id="logo-coder-pitfalls" viewBox="0 0 32 32">
+    <rect x="1" y="1" width="30" height="30" rx="8.5" fill="var(--accent, #c2410c)"/>
+    <path d="M12.2 10.2 6.4 16l5.8 5.8M19.8 10.2 25.6 16l-5.8 5.8" fill="none" stroke="var(--on-accent, #fff)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M13.3 16.3l2.1 2.2 3.5-4.5" fill="none" stroke="var(--on-accent, #fff)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>

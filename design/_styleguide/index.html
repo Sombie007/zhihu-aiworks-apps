@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="table-cleaner">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设计系统 · 样式指南 — 折向东 · 工具箱</title>
+<!--@favicon-->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<style>
+  .sg-section { display: flex; flex-direction: column; gap: var(--sp-4); }
+  .sg-canvas {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4);
+    padding: var(--sp-5); background: var(--surface-raised);
+    border: 1px dashed var(--border-control); border-radius: var(--r-lg);
+  }
+  .sg-canvas--column { flex-direction: column; align-items: stretch; }
+  .sg-logo-row { display: flex; align-items: flex-end; gap: var(--sp-6); flex-wrap: wrap; }
+  .sg-logo-cell { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); font-size: var(--fs-xs); color: var(--text-3); }
+  .sg-mono { filter: grayscale(1); }
+  @media (max-width: 720px) { .topbar .badge { display: none; } }
+</style>
+</head>
+<body>
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="#">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-table-cleaner"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">样式指南</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="示例导航">
+      <div class="nav__group">
+        <div class="nav__label">章节</div>
+        <a class="nav__item" href="#logo" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-swatch"/></svg><span class="nav__item-text">标志与图标</span></a>
+        <a class="nav__item" href="#buttons"><svg class="icon" aria-hidden="true"><use href="#i-wrench-screwdriver"/></svg><span class="nav__item-text">按钮</span><span class="nav__count">8</span></a>
+        <a class="nav__item" href="#forms"><svg class="icon" aria-hidden="true"><use href="#i-adjustments-horizontal"/></svg><span class="nav__item-text">表单控件</span></a>
+        <a class="nav__item" href="#data"><svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg><span class="nav__item-text">数据与反馈</span></a>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换到深色外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="app__main">
+    <header class="topbar">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-toolbox"/></svg>
+      <span class="topbar__title">设计系统 v2.0</span>
+      <span class="badge badge--accent">Apple HIG 式 · 系统工具</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions">
+        <label class="sr-only" for="accent-pick">切换工具强调色</label>
+        <select class="select" id="accent-pick" style="width:auto;min-height:32px">
+          <option value="table-cleaner">表格清洗 · 青碧</option>
+          <option value="digital-maturity">成熟度自评 · 森绿</option>
+          <option value="pmp-assistant">PMP 助手 · 藏青</option>
+          <option value="coder-pitfalls">避坑指南 · 赭橙</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="content" id="main">
+      <section class="sg-section" id="logo">
+        <div class="section-head"><h2>标志</h2><span class="section-head__meta">16px 可辨认 · 纯黑白可用 · 无渐变</span></div>
+        <div class="card card__body sg-canvas">
+          <div class="sg-logo-cell"><svg class="brand-mark" style="width:64px;height:64px"><use href="#logo-toolbox"/></svg><span>系列标志 64</span></div>
+          <div class="sg-logo-cell"><svg class="brand-mark" style="width:64px;height:64px"><use href="#logo-table-cleaner"/></svg><span>表格清洗 64</span></div>
+          <div class="sg-logo-cell"><svg class="brand-mark" style="width:64px;height:64px"><use href="#logo-digital-maturity"/></svg><span>成熟度自评 64</span></div>
+          <div class="sg-logo-cell"><svg class="brand-mark" style="width:64px;height:64px"><use href="#logo-pmp-assistant"/></svg><span>PMP 助手 64</span></div>
+          <div class="sg-logo-cell"><svg class="brand-mark" style="width:64px;height:64px"><use href="#logo-coder-pitfalls"/></svg><span>避坑指南 64</span></div>
+        </div>
+        <div class="card card__body sg-canvas">
+          <div class="sg-logo-row">
+            <div class="sg-logo-cell"><svg class="brand-mark" style="width:16px;height:16px"><use href="#logo-table-cleaner"/></svg><span>16</span></div>
+            <div class="sg-logo-cell"><svg class="brand-mark" style="width:28px;height:28px"><use href="#logo-table-cleaner"/></svg><span>28</span></div>
+            <div class="sg-logo-cell"><svg class="brand-mark brand-mark--lg"><use href="#logo-table-cleaner"/></svg><span>40</span></div>
+            <div class="sg-logo-cell sg-mono"><svg class="brand-mark brand-mark--lg"><use href="#logo-table-cleaner"/></svg><span>灰度测试</span></div>
+            <div class="sg-logo-cell"><svg class="brand-mark brand-mark--lg" style="color:var(--text-1)"><use href="#logo-toolbox"/></svg><span>系列 · 单色</span></div>
+            <div class="sg-logo-cell"><svg class="brand-mark brand-mark--lg" style="color:#fff;background:#1b1f27;padding:8px;border-radius:8px"><use href="#logo-toolbox"/></svg><span>反白测试</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sg-section" id="buttons">
+        <div class="section-head"><h2>按钮</h2><span class="section-head__meta">8 状态</span></div>
+        <div class="card"><div class="card__body sg-canvas">
+          <button class="btn btn--primary" type="button">开始清洗</button>
+          <button class="btn btn--secondary" type="button">载入示例数据</button>
+          <button class="btn btn--ghost" type="button">重新开始</button>
+          <button class="btn btn--danger" type="button">清空数据</button>
+          <button class="btn btn--primary" type="button" disabled>导出 CSV</button>
+          <button class="btn btn--primary" type="button" aria-busy="true">正在导出</button>
+          <button class="btn btn--secondary btn--icon" type="button" aria-label="复制"><svg class="icon" aria-hidden="true"><use href="#i-clipboard-document"/></svg></button>
+          <button class="btn btn--secondary btn--icon btn--icon-lg" type="button" aria-label="设置"><svg class="icon" aria-hidden="true"><use href="#i-adjustments-horizontal"/></svg></button>
+          <button class="btn btn--primary btn--sm" type="button"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-plus"/></svg>添加规则</button>
+          <button class="btn btn--secondary btn--lg" type="button">大号按钮 44px</button>
+        </div></div>
+      </section>
+
+      <section class="sg-section" id="forms">
+        <div class="section-head"><h2>表单控件</h2></div>
+        <div class="card"><div class="card__body stack--6">
+          <div class="form-grid">
+            <div class="field"><label class="label" for="f1">分隔符</label>
+              <select class="select" id="f1"><option>自动识别</option><option>逗号</option><option>制表符</option></select>
+              <span class="hint">默认按首行出现的次数判断</span></div>
+            <div class="field"><label class="label" for="f2">空值填充为</label>
+              <input class="input" id="f2" value="（空）"><span class="hint">留空则保持空单元格</span></div>
+            <div class="field"><label class="label" for="f3">查找内容</label>
+              <input class="input" id="f3" aria-invalid="true" aria-describedby="f3-err" value="[a-z">
+              <span class="error-text" id="f3-err"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-exclamation-circle"/></svg>正则表达式缺少右方括号</span></div>
+            <div class="field"><label class="label" for="f4">替换为</label>
+              <input class="input" id="f4" data-valid="true" value="USD"><span class="hint">可留空，表示删除</span></div>
+            <div class="field"><label class="label" for="f5">备注</label>
+              <input class="input" id="f5" disabled value="不可编辑"><span class="hint">禁用状态</span></div>
+            <div class="search"><svg class="icon" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+              <input class="input" type="search" aria-label="搜索" placeholder="搜索规则"></div>
+          </div>
+
+          <div class="row row--wrap" style="gap: var(--sp-5)">
+            <label class="check"><input class="check__input" type="checkbox" checked><span class="check__box"></span><span class="check__label">去除首尾空白</span></label>
+            <label class="check"><input class="check__input" type="checkbox"><span class="check__box"></span><span class="check__label">整行去重</span></label>
+            <label class="check"><input class="check__input" type="checkbox" disabled><span class="check__box"></span><span class="check__label">已锁定</span></label>
+            <label class="check check--radio"><input class="check__input" type="radio" name="r" checked><span class="check__box"></span><span class="check__label">UTF-8</span></label>
+            <label class="check check--radio"><input class="check__input" type="radio" name="r"><span class="check__box"></span><span class="check__label">GBK（Excel）</span></label>
+            <label class="switch"><input class="switch__input" type="checkbox" checked><span class="switch__track"></span><span>首行为表头</span></label>
+          </div>
+
+          <div class="choice-list" role="radiogroup" aria-label="这家公司目前主要靠什么做经营分析">
+            <label class="choice"><input class="check__input" type="radio" name="lv"><span class="choice__marker">1</span><span><span class="choice__title">靠经验判断</span><span class="choice__desc">数据散落在各个 Excel 里，要用的时候临时找人汇总</span></span></label>
+            <label class="choice"><input class="check__input" type="radio" name="lv" checked><span class="choice__marker">2</span><span><span class="choice__title">固定报表</span><span class="choice__desc">每月有人工整理的报表，口径各部门不完全一致</span></span></label>
+            <label class="choice"><input class="check__input" type="radio" name="lv"><span class="choice__marker">3</span><span><span class="choice__title">系统看板</span><span class="choice__desc">核心指标可实时查看，口径全公司统一</span></span></label>
+            <label class="choice"><input class="check__input" type="radio" name="lv"><span class="choice__marker">4</span><span><span class="choice__title">数据驱动决策</span><span class="choice__desc">经营决策有数据支撑，并能预测趋势</span></span></label>
+          </div>
+
+          <div class="row row--wrap row--between">
+            <div class="segmented" role="tablist">
+              <button class="segmented__btn" role="tab" aria-selected="true" type="button">输入</button>
+              <button class="segmented__btn" role="tab" aria-selected="false" type="button">规则</button>
+              <button class="segmented__btn" role="tab" aria-selected="false" type="button">结果</button>
+            </div>
+            <div class="chip-row">
+              <button class="chip" aria-pressed="true" type="button">全部</button>
+              <button class="chip" aria-pressed="false" type="button">Java</button>
+              <button class="chip" aria-pressed="false" type="button">Redis</button>
+              <button class="chip" aria-pressed="false" type="button" disabled>MySQL</button>
+            </div>
+          </div>
+        </div></div>
+      </section>
+
+      <section class="sg-section" id="data">
+        <div class="section-head"><h2>数据与反馈</h2></div>
+        <div class="card">
+          <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg>列概况</span>
+            <span class="card__meta"><span class="badge badge--accent">已清洗</span>1,247 行</span></div>
+          <div class="card__body"><div class="stat-row">
+            <div class="stat"><span class="stat__value">1,247</span><span class="stat__label">原始行数</span></div>
+            <div class="stat"><span class="stat__value">1,183</span><span class="stat__label">清洗后</span></div>
+            <div class="stat"><span class="stat__value">64</span><span class="stat__label">删除（重复 41 / 空行 23）</span></div>
+            <div class="stat"><span class="stat__value">312</span><span class="stat__label">修改的单元格</span></div>
+          </div></div>
+        </div>
+
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>列名</th><th>识别类型</th><th class="num">缺失率</th><th class="num">唯一值</th><th>示例值</th></tr></thead>
+          <tbody>
+            <tr><td>订单号</td><td><span class="badge badge--outline">文本</span></td><td class="num">0.0%</td><td class="num">1,183</td><td class="mono">SO-2026-03871</td></tr>
+            <tr><td>金额</td><td><span class="badge badge--success">数值</span></td><td class="num">1.2%</td><td class="num">642</td><td class="num">12800.50</td></tr>
+            <tr><td>下单日期</td><td><span class="badge badge--success">日期</span></td><td class="num">0.0%</td><td class="num">97</td><td class="num">2026-03-14</td></tr>
+            <tr><td>客户经理</td><td><span class="badge badge--outline">文本</span></td><td class="num">7.8%</td><td class="num">23</td><td class="is-changed">周敏</td></tr>
+          </tbody></table></div>
+
+        <div class="grid grid-2">
+          <div class="callout callout--info"><svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+            <div class="callout__body"><div class="callout__title">所有处理都在本机完成</div>数据不会上传到任何服务器，处理含客户信息的表格也可以放心使用。</div></div>
+          <div class="callout callout--success"><svg class="icon" aria-hidden="true"><use href="#i-check-circle"/></svg>
+            <div class="callout__body"><div class="callout__title">已导出 cleaned.csv</div>编码 UTF-8（带 BOM），Excel 可直接打开。</div></div>
+          <div class="callout callout--warning"><svg class="icon" aria-hidden="true"><use href="#i-exclamation-triangle"/></svg>
+            <div class="callout__body"><div class="callout__title">有 9 行日期格式不统一</div>无法判断 03/04 是 3 月 4 日还是 4 月 3 日，已保留原值。</div></div>
+          <div class="callout callout--danger"><svg class="icon" aria-hidden="true"><use href="#i-exclamation-circle"/></svg>
+            <div class="callout__body"><div class="callout__title">正则表达式有误</div><code>[a-z</code> 缺少右方括号，修正后规则才会生效。</div></div>
+        </div>
+
+        <div class="card"><div class="card__body stack--4">
+          <div class="row row--between"><span class="small">评估进度</span><span class="small muted num">9 / 20 题</span></div>
+          <div class="progress" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" aria-label="评估进度"><div class="progress__bar" style="width:45%"></div></div>
+        </div></div>
+
+        <div class="row row--wrap">
+          <span class="badge badge--accent">进行中</span><span class="badge badge--success">已完成</span><span class="badge badge--warning">待确认</span>
+          <span class="badge badge--danger">已逾期</span><span class="badge badge--info">参考</span><span class="badge badge--outline">进阶</span><span class="badge badge--solid">PMP</span>
+        </div>
+
+        <div class="card"><div class="card__body empty">
+          <svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg>
+          <div class="empty__title">还没有数据</div>
+          <p class="empty__text">把表格内容粘贴进来，或选择一个 CSV 文件。也可以先载入示例数据，看看每条规则的效果。</p>
+          <div class="empty__actions"><button class="btn btn--primary" type="button">载入示例数据</button><button class="btn btn--secondary" type="button">选择文件</button></div>
+        </div></div>
+
+        <div class="card"><div class="card__body sg-canvas sg-canvas--column">
+          <div class="code-block"><div class="code-block__header"><span>反例</span><button class="btn btn--ghost btn--sm" type="button">复制代码</button></div><code><span class="mono">executor.submit(() -&gt; service.save(order));  // 异常被线程池吞掉，日志里什么都没有</span></code></div>
+          <div class="row row--wrap"><span class="small">快捷键</span><span class="kbd">/</span><span class="muted small">搜索</span><span class="kbd">J</span><span class="kbd">K</span><span class="muted small">上下切换</span></div>
+          <div class="row"><span class="spinner" aria-hidden="true"></span><span class="skeleton" style="width:180px;height:14px">加载占位</span></div>
+        </div></div>
+
+        <div class="row row--wrap">
+          <button class="btn btn--secondary" type="button" id="toast-info">轻提示 · 信息</button>
+          <button class="btn btn--secondary" type="button" id="toast-success">轻提示 · 成功</button>
+          <button class="btn btn--secondary" type="button" id="toast-warning">轻提示 · 警告</button>
+          <button class="btn btn--secondary" type="button" id="toast-danger">轻提示 · 错误</button>
+          <button class="btn btn--secondary" type="button" id="open-dialog">打开对话框</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<dialog class="dialog" id="demo-dialog" aria-labelledby="demo-dialog-title">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="demo-dialog-title">清空当前数据？</h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框"><svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg></button>
+    <div class="dialog__body"><p class="small">已加载的 1,247 行数据和勾选的规则都会被清空，此操作无法撤销。</p></div>
+    <div class="dialog__footer"><button class="btn btn--secondary" type="button" data-close>保留数据</button><button class="btn btn--danger" type="button" data-close>清空 1,247 行</button></div>
+  </div>
+</dialog>
+
+<script src="../../design/shared.js"></script>
+<script>
+  document.getElementById('accent-pick').addEventListener('change', function (e) {
+    document.documentElement.dataset.app = e.target.value;
+  });
+  document.getElementById('toast-info').addEventListener('click', function () { ZDX.toast('草稿已保存', 'info'); });
+  document.getElementById('toast-success').addEventListener('click', function () { ZDX.toast('已复制到剪贴板', 'success'); });
+  document.getElementById('toast-warning').addEventListener('click', function () { ZDX.toast('有 9 个单元格未能识别日期格式', 'warning'); });
+  document.getElementById('toast-danger').addEventListener('click', function () { ZDX.toast('导出失败：文件正在被其他程序占用', 'danger'); });
+  var dlg = document.getElementById('demo-dialog');
+  document.getElementById('open-dialog').addEventListener('click', function () { ZDX.openDialog(dlg); });
+  dlg.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { ZDX.closeDialog(dlg); }); });
+</script>
+</body>
+</html>

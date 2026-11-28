@@ -1,0 +1,961 @@
+/* ============================================================================
+   数字化成熟度自评 · 应用样式
+   只写本应用特有的部分。颜色一律引用 design/tokens.css 的变量，派生色用 color-mix。
+   对设计系统的补充（组件库里没有、本应用需要的）：
+     [hidden]                      组件库给 .btn 等设了 display，会盖掉 hidden 属性，这里统一兜底
+     .nav__item[aria-disabled]     导航项“暂不可用”的状态
+     .choice__text                 只有一句陈述、没有标题和描述两段的选项正文
+     .table--text                  以文字为主的表格：字号回到正文 14px
+   ========================================================================== */
+
+/* hidden 属性必须永远生效（视图切换、工具栏按钮显隐都靠它） */
+[hidden] { display: none !important; }
+
+/* ---------- 导航项：暂不可用（例如还没答完时的评估报告） ---------- */
+.nav__item[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  color: var(--text-2);
+}
+.nav__item[aria-disabled="true"]:hover,
+.nav__item[aria-disabled="true"]:active {
+  background: transparent;
+  color: var(--text-2);
+}
+
+/* ---------- 视图 ---------- */
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+/* ---------- 通用：等级阶梯（四级台阶，当前级高亮） ---------- */
+.ladder {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+}
+.ladder__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.ladder__bar {
+  display: block;
+  width: 34px;
+  border: 1px solid var(--border-control);
+  border-bottom: 0;
+  border-radius: var(--r-xs) var(--r-xs) 0 0;
+  background: transparent;
+}
+.ladder__step:nth-child(1) .ladder__bar { height: 16px; }
+.ladder__step:nth-child(2) .ladder__bar { height: 24px; }
+.ladder__step:nth-child(3) .ladder__bar { height: 32px; }
+.ladder__step:nth-child(4) .ladder__bar { height: 40px; }
+.ladder__label {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+/* 已经达到的台阶：强调色淡底；当前台阶：实底 + 强调色文字。不靠颜色区分：当前级字重更重 */
+.ladder__step--past .ladder__bar {
+  background: var(--accent-border);
+  border-color: transparent;
+}
+.ladder__step--past .ladder__label { color: var(--text-2); }
+.ladder__step--current .ladder__bar {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.ladder__step--current .ladder__label {
+  color: var(--accent);
+  font-weight: 600;
+}
+/* 没有有效作答：四级都是空描边 */
+.ladder--empty .ladder__bar { border-style: dashed; }
+.ladder--sm { gap: var(--sp-2); }
+.ladder--sm .ladder__bar { width: 26px; }
+.ladder--sm .ladder__step:nth-child(1) .ladder__bar { height: 13px; }
+.ladder--sm .ladder__step:nth-child(2) .ladder__bar { height: 19px; }
+.ladder--sm .ladder__step:nth-child(3) .ladder__bar { height: 25px; }
+.ladder--sm .ladder__step:nth-child(4) .ladder__bar { height: 31px; }
+
+/* ---------- 通用：四个等级的色阶（热力图格子、分布条、图例共用） ---------- */
+.shade-1 { background: color-mix(in oklch, var(--accent) 15%, var(--surface-raised)); }
+.shade-2 { background: color-mix(in oklch, var(--accent) 40%, var(--surface-raised)); }
+.shade-3 { background: color-mix(in oklch, var(--accent) 65%, var(--surface-raised)); }
+.shade-4 { background: var(--accent); }
+.shade-na {
+  background: repeating-linear-gradient(135deg, var(--surface-sunken) 0 5px, var(--border) 5px 7px);
+}
+
+/* ---------- 开始评估 ---------- */
+.start__lede {
+  margin-top: var(--sp-1);
+  max-width: 56ch;
+}
+.start__stats {
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.step__no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.step__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 3px;
+}
+.step__title { font-weight: 600; }
+.step__text { color: var(--text-2); }
+
+.dim-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dim-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 18px;
+  border-top: 1px solid var(--border);
+}
+.dim-list__item:first-child { border-top: 0; }
+.dim-list__no {
+  flex: none;
+  width: 1.4em;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.dim-list__name { flex: none; font-weight: 600; }
+.dim-list__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-2);
+}
+.dim-list__count {
+  flex: none;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.start__cta {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-2) 0 var(--sp-1);
+}
+
+/* 上次的作答：继续 / 查看 / 重新评估 */
+.resume { border-left: 3px solid var(--accent); }
+.resume__body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.resume__icon { color: var(--accent); flex: none; }
+.resume__text {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.resume__title { font-weight: 600; }
+.resume__meta { color: var(--text-2); }
+.resume__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ---------- 评估问卷 ---------- */
+.survey__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-top: var(--sp-2);
+}
+.survey__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.dim-panel__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0 var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+.dim-panel__kicker {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-3);
+}
+.dim-panel__title {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+}
+.dim-panel__summary {
+  color: var(--text-2);
+  max-width: 68ch;
+}
+
+.q {
+  padding: var(--sp-5) 0;
+  border-bottom: 1px solid var(--border);
+}
+.q:last-child {
+  padding-bottom: var(--sp-3);
+  border-bottom: 0;
+}
+.q__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+.q__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+.q__no {
+  flex: none;
+  padding-top: 1px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.q__state { flex: none; }
+
+/* 只有一句陈述的选项：正文 14px，颜色用一级文字 */
+.choice__text {
+  display: block;
+  min-width: 0;
+  padding-top: 1px;
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--text-1);
+}
+/* 成句的提示（非官方说明、免责原文、场景提示）：组件库的 .callout 默认 13px，
+   这里放的是完整句子，按“正文不小于 14px”提到 14px */
+.callout--text { font-size: var(--fs-base); }
+
+/* 选项前圆圈里的等级数字：组件库给的是 11px，低于“辅助说明最小 12px”，这里提到 12px */
+.choice .choice__marker { font-size: var(--fs-xs); }
+
+/* “不适用”和四个等级分开一点：虚线框、透明底 */
+.choice--na {
+  margin-top: var(--sp-1);
+  background: transparent;
+  border-style: dashed;
+}
+.choice--na .choice__desc { color: var(--text-3); }
+
+/* 维度切换的分段控件里带上“已答 / 题数” */
+.dim-tabs__count {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.segmented__btn[aria-pressed="true"] .dim-tabs__count { color: var(--text-2); }
+
+/* ---------- 报告 ---------- */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-6);
+  margin: 0;
+}
+.meta__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.meta dt {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+.meta dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.sec__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.sec__no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+/* 综合结论：大号数字 + 四级阶梯 + 一句话判读 */
+.verdict__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-5) var(--sp-8);
+}
+.verdict__level {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.verdict__label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.verdict__figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  color: var(--accent);
+  line-height: 1;
+}
+.verdict__num {
+  font-size: 72px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.verdict__unit {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+}
+.verdict--none .verdict__figure { color: var(--text-3); }
+.verdict__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.verdict__kicker {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.verdict__sentence {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+.verdict__aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+  color: var(--text-2);
+}
+
+.why p { max-width: 72ch; }
+.why p + p { margin-top: 0; }
+.why__muted { color: var(--text-2); }
+.why strong { font-weight: 600; }
+
+/* 维度卡片 */
+.dim-card .card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.dim-card__no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  background: var(--surface-sunken);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.dim-card__next {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+.dim-card__next--quiet {
+  color: var(--text-2);
+  font-weight: 400;
+}
+.dim-card__facts {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+/* 分布条：这个维度里各等级各有几道题 */
+.dist {
+  display: flex;
+  height: 10px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+.dist__seg { min-width: 0; }
+.dist__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.dist__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dist__swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+.dist__swatch.shade-4 { border-color: transparent; }
+
+.report__charts {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+/* 题目热力图 */
+.heat { width: 100%; }
+.heat__scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.heat table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.heat th,
+.heat td {
+  padding: 0;
+  text-align: center;
+  vertical-align: bottom;
+}
+.heat thead th {
+  padding-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.heat tbody th {
+  text-align: left;
+  vertical-align: middle;
+  padding-right: var(--sp-3);
+}
+.heat__row-name {
+  display: block;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: var(--lh-snug);
+}
+.heat__row-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-3);
+}
+.heat__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  width: 100%;
+  min-height: var(--control-h-lg);
+  padding: 0;
+  border-radius: var(--r-md);
+  cursor: pointer;
+}
+/* 格子里的分数是 20px / 700 的大号文本：四档底色上对比度都够（深色主题的 65% 档是中间调，小字不够） */
+.heat__tile {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 64px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-md);
+  color: var(--text-1);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+.heat__tile.shade-4 { color: var(--on-accent); }
+.heat__tile--na {
+  font-weight: 500;
+  color: var(--text-2);
+}
+.heat__btn:hover .heat__tile {
+  box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--accent);
+}
+.heat__no {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.heat__readout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  min-height: calc(3.2em + var(--sp-3) * 2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-sunken);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+}
+.heat__blank { padding: 0; }
+.heat col.heat__col-label { width: 112px; }
+.heat__readout-title { font-weight: 600; }
+.heat__readout-text { color: var(--text-2); }
+.heat__hint { color: var(--text-3); }
+
+/* 图例（热力图、分布条共用） */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.legend__key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.legend__swatch {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border);
+}
+.legend__swatch.shade-4 { border-color: transparent; }
+
+/* 雷达图 */
+.radar {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+}
+.radar text { font-family: var(--font-sans); }
+.radar__grid {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.radar__axis { stroke: var(--border); stroke-width: 1; }
+.radar__tick {
+  fill: var(--text-3);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.radar__label {
+  fill: var(--text-1);
+  font-size: 14px;
+  font-weight: 600;
+}
+.radar__value {
+  fill: var(--text-2);
+  font-size: 13px;
+}
+.radar__area {
+  fill: var(--accent-tint-strong);
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.radar__dot {
+  fill: var(--accent);
+  stroke: var(--surface-raised);
+  stroke-width: 2;
+}
+.radar__overall {
+  fill: none;
+  stroke: var(--text-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.radar__note {
+  text-align: center;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.radar-legend__key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.radar-legend__line {
+  width: 24px;
+  height: 0;
+  border-top: 2px solid var(--accent);
+}
+.radar-legend__line--overall { border-top: 2px dashed var(--text-2); }
+
+/* 需要优先补的题 */
+.gap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gap-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) 18px;
+  border-top: 1px solid var(--border);
+}
+.gap-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.gap-item__no {
+  color: var(--text-3);
+  font-weight: 500;
+}
+.gap-item__title { font-weight: 600; }
+.gap-item__line {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+}
+.gap-item__label {
+  flex: none;
+  color: var(--text-3);
+}
+.gap-item__label--accent { color: var(--accent); font-weight: 600; }
+.gap-item__text {
+  min-width: 0;
+  color: var(--text-1);
+}
+.gap-item__text--quote { color: var(--text-2); }
+.gap-hint {
+  max-width: 72ch;
+  padding: var(--sp-3) 18px 0;
+  color: var(--text-2);
+  font-size: var(--fs-base);
+}
+.gap__meta .icon { color: var(--text-3); }
+
+/* 90 天行动建议 */
+.plan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--sp-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.plan__item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.plan__item .card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  flex: 1;
+}
+.plan__step {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.plan__when {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.plan__weeks {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.plan__name { font-weight: 600; }
+.plan__text { min-width: 0; }
+.plan__note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-2);
+}
+.plan__note .strong { color: var(--text-1); }
+
+/* 报告页脚 */
+.report__foot {
+  display: grid;
+  gap: var(--sp-6);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--border);
+}
+.report__foot-title {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-md);
+}
+.report__foot .btn { justify-self: start; }
+
+/* ---------- 有序列表（评分规则） ---------- */
+.rules {
+  margin: 0;
+  padding-left: 1.6em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.rules li { padding-left: var(--sp-1); }
+.rules__term { font-weight: 600; }
+.rules em { font-style: normal; font-weight: 600; }
+
+/* ---------- 常见问题 ---------- */
+.faq {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.faq dt {
+  margin-bottom: var(--sp-1);
+  font-weight: 600;
+}
+.faq dd {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.method-dim-ordinal {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+}
+
+/* 浅色主题下，组件库的 .badge--accent（强调色文字压在 11% 淡底上）对本应用的森绿只有 4.38:1，
+   不到小字要求的 4.5:1。换成 tokens 里已有的加深一档的强调色（--accent-hover），约 5.4:1。
+   深色主题下本来就是 5.0:1，不用动。 */
+:root:not([data-theme="dark"]) .badge--accent { color: var(--accent-hover); }
+
+/* 警告色文字：浏览器不允许本地保存时提示用 */
+.text-warning { color: var(--warning); }
+
+/* 以文字为主的表格：字号回到正文 */
+.table--text { font-size: var(--fs-base); }
+.table--text th { white-space: normal; }
+.table--text .nowrap { white-space: nowrap; }
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 720px) {
+  /* 工具栏只留主要操作；“方法说明”从侧栏导航进 */
+  .topbar #tb-method { display: none; }
+  .topbar .btn { padding: 0 var(--sp-3); }
+
+  /* 触控目标补到 44px：组件库在窄屏下只把 .btn 提到了 44px，
+     分段按钮（30px）和下拉框（36px）还是桌面尺寸 */
+  .segmented__btn,
+  .select { min-height: var(--control-h-lg); }
+
+  .verdict__body {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+  .verdict__num { font-size: 56px; }
+
+  .report__charts { grid-template-columns: 1fr; }
+
+  .survey__foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .survey__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));   /* 两个或三个按钮平分一行 */
+  }
+  .survey__nav .btn { white-space: normal; text-align: center; }
+  .survey__foot > .btn { align-self: flex-start; }
+
+  .dim-list__item { flex-wrap: wrap; }
+  .dim-list__text { flex-basis: 100%; padding-left: calc(1.4em + var(--sp-3)); }
+
+  .heat col.heat__col-label { width: 76px; }
+  .heat thead th { font-size: 12px; }
+  .heat__tile { max-width: 44px; }
+  .heat__row-name { font-size: var(--fs-sm); }
+  .heat__row-meta { font-size: 12px; }
+
+  .plan__step { grid-template-columns: 76px minmax(0, 1fr); }
+}
+
+/* 平板与手机宽度下侧栏变成顶部横条，导航项在组件库里是 40px 高，这里补到 44px */
+@media (max-width: 960px) {
+  .nav__item { min-height: var(--control-h-lg); }
+}
+
+/* ---------- 打印：只打报告，占满 A4，卡片不被分页截断 ---------- */
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm;
+}
+
+@media print {
+  .app { display: block; }
+  .app__sidebar,
+  .topbar,
+  .skip-link,
+  .toast-region,
+  dialog,
+  .no-print {
+    display: none !important;
+  }
+  .app__main { background: transparent; }
+
+  .content {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+  .view[hidden] { display: none !important; }
+  .view { gap: var(--sp-5); }
+
+  .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .sec,
+  .gap-item,
+  .plan__item,
+  .report__foot section,
+  tr,
+  li {
+    break-inside: avoid;
+  }
+  .sec { gap: var(--sp-3); }
+  h1,
+  h2,
+  h3,
+  .card__header,
+  .card__title {
+    break-after: avoid;               /* 标题不与后面的内容分到两页 */
+  }
+  /* “需要优先补的题”是很长的列表卡片：整张避开分页会留下一大片空白，
+     所以允许在条目之间分页，只保证单条完整（上面的 .gap-item） */
+  #report-gap .card { break-inside: auto; }
+
+  /* 打印时的版式写死，不跟着屏幕断点走：打印下媒体查询按纸张宽度算，
+     A4 内容宽度正好落进设计系统的窄屏断点（≤ 720px），会把两栏压成一栏 */
+  #report-dims { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .verdict__body {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-5) var(--sp-8);
+  }
+  .verdict__num { font-size: 64px; }
+  .report__charts {
+    grid-template-columns: 1fr;
+    gap: var(--sp-4);
+  }
+  .heat col.heat__col-label { width: 104px; }
+  .heat__row-name { font-size: var(--fs-base); }
+  .heat__row-meta,
+  .heat thead th { font-size: var(--fs-xs); }
+  .heat__tile { max-width: 56px; }
+  .radar { max-width: 300px; }
+  .plan { grid-template-columns: 1fr; }
+  .plan__step { grid-template-columns: 84px minmax(0, 1fr); }
+
+  /* 屏幕上的底色（热力图格子、阶梯、分布条、徽标、提示框）原样打印出来 */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .heat__btn { cursor: auto; }
+  a { color: inherit; }
+}

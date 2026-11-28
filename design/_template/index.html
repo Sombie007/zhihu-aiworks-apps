@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="CHANGE-ME">
+<!--
+  应用外壳模板。复制为 apps/<app-id>/index.html 后：
+  1. 把 data-app 改成应用 id（决定强调色）：table-cleaner | digital-maturity | pmp-assistant | coder-pitfalls
+  2. 替换所有 [方括号] 占位内容
+  3. 应用自己的样式放 styles.css、数据放 data.js、逻辑放 app.js（构建时自动内联）
+  不要改动下面 5 个"公共资源引用"的写法，构建脚本靠它们定位。
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[应用名] — [一句话说明] | 折向东 · 工具箱</title>
+<meta name="description" content="[80 字以内，说明这个工具解决什么问题]">
+<meta name="author" content="折向东">
+<meta name="robots" content="index,follow">
+<!--@favicon-->
+
+<!-- 公共资源引用（勿改写法） -->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<!-- 应用自己的文件 -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- 图标与标志 sprite（构建时内联到页面顶部，必须放在 body 第一个元素） -->
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="./" aria-label="[应用名]，折向东 · 工具箱">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-[应用id]"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">[应用名]</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="功能导航">
+      <div class="nav__group">
+        <div class="nav__label">[分组名]</div>
+        <button class="nav__item" type="button" data-view="overview" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-square-2-stack"/></svg>
+          <span class="nav__item-text">概览</span>
+        </button>
+        <button class="nav__item" type="button" data-view="[view]">
+          <svg class="icon" aria-hidden="true"><use href="#i-[图标名]"/></svg>
+          <span class="nav__item-text">[功能名]</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+      <span>v[版本号] · 数据只在本机处理</span>
+    </div>
+  </aside>
+
+  <!-- ================= 主区域 ================= -->
+  <div class="app__main">
+    <header class="topbar">
+      <span class="topbar__title" id="view-title">[当前视图标题]</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions">
+        <!-- 当前视图的主要操作：按钮文字用“动词 + 对象” -->
+        <button class="btn btn--secondary" type="button">[导出结果]</button>
+        <button class="btn btn--primary" type="button">[开始评估]</button>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+      <!-- 每个视图一个 <section>，用 hidden 属性切换；同一时刻只显示一个 -->
+      <section class="view" data-view-panel="overview">
+        <div class="section-head">
+          <div>
+            <h1>[这个工具帮谁解决什么问题]</h1>
+            <p class="muted" style="margin-top:4px">[一句话说明它怎么做]</p>
+          </div>
+        </div>
+        <!-- 空状态：图标 + 标题 + 说明价值 + 明确的下一步 -->
+        <div class="card"><div class="card__body empty">
+          <svg class="icon" aria-hidden="true"><use href="#i-[图标名]"/></svg>
+          <div class="empty__title">[还没有……]</div>
+          <p class="empty__text">[为什么要做这一步，做了能得到什么]</p>
+          <div class="empty__actions">
+            <button class="btn btn--primary" type="button">[动词 + 对象]</button>
+          </div>
+        </div></div>
+      </section>
+
+      <section class="view" data-view-panel="[view]" hidden>
+        <h2>[功能名]</h2>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- 公共脚本（勿改写法） -->
+<script src="../../design/shared.js"></script>
+<!-- 应用自己的文件 -->
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

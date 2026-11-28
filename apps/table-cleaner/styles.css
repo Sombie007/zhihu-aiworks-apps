@@ -1,0 +1,778 @@
+/* ============================================================================
+   表格清洗 · 应用样式
+   ----------------------------------------------------------------------------
+   只写设计系统（tokens / base / components）里没有的部分。
+   颜色一律引用 tokens.css 的变量，派生色用 color-mix。
+   分块：0 通用 · 1 顶栏 · 2 导入 · 3 规则 · 4 列概况 · 5 结果 · 6 使用说明 · 7 对话框 · 8 窄屏
+   ========================================================================== */
+
+/* ---------- 0. 通用 ---------- */
+
+/* 说明：视图切换、工具栏按钮、规则参数的显隐都靠 hidden 属性。
+   组件库的 .btn / .row / .stack 自带 display，会盖掉 hidden，设计系统的 base.css
+   已经用一条全局的 [hidden] { display: none !important } 兜底，这里不再重复。 */
+
+/* 表格里的空单元格：一条短横线（画出来的图形，不是文字，读屏软件不会念出来） */
+.cell-empty {
+  display: inline-block;
+  width: 10px;
+  height: 1.5px;
+  border-radius: var(--r-xs);
+  background: var(--text-3);
+  vertical-align: middle;
+}
+
+/* 阅读型的视图（规则、使用说明）不要跟着通栏拉宽；表格类视图保持通栏 */
+.view--max {
+  max-width: var(--content-max);
+}
+
+/* ---------- 1. 顶栏 ---------- */
+
+/* 当前数据的一句话说明，例如「订单数据 · 24 行 × 12 列」 */
+.topbar__meta {
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar .btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* 数据大、计算需要一会儿的时候：顶栏显示「正在清洗」 */
+.topbar__busy {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.topbar__busy .spinner {
+  width: 14px;
+  height: 14px;
+}
+
+/* 计算期间内容变淡、暂时不响应点击，算完立刻恢复 */
+.content.is-busy {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+/* ---------- 2. 导入 ---------- */
+
+.import-empty {
+  padding: var(--sp-8) var(--sp-6) var(--sp-6);
+}
+
+.import {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 18px var(--sp-5);
+}
+
+/* 拖拽放置区：虚线框，拖入文件时高亮 */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--surface-sunken);
+  border: 1.5px dashed var(--border-control);
+  border-radius: var(--r-lg);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.dropzone:hover {
+  border-color: var(--text-3);
+}
+
+.dropzone.is-dragover {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.dropzone .textarea {
+  min-height: 240px;
+}
+
+.dropzone__hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-3);
+}
+
+.dropzone__hint .icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.dropzone__hint.is-warning {
+  color: var(--warning);
+}
+
+.import__options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-4) var(--sp-8);
+}
+
+/* 让开关和左边的分段控件在同一水平线上（标签行高约 21px + 间距 6px） */
+.import__options .switch {
+  margin-top: 27px;
+}
+
+.import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.import__status {
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.import__status.is-warning {
+  color: var(--warning);
+}
+
+/* ---------- 3. 清洗规则 ---------- */
+
+.rule-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  counter-reset: rule;
+}
+
+/* 每条规则一张卡片：左边序号，右边「开关 + 名称 … 影响」和说明、参数 */
+.rule {
+  counter-increment: rule;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.rule::before {
+  content: counter(rule);
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full);
+  background: var(--surface-sunken);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rule__head {
+  grid-row: 1;
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-3);
+}
+
+.rule__name {
+  font-weight: 600;
+}
+
+.rule.is-off .rule__name {
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+.rule__body {
+  grid-row: 2;
+  grid-column: 2;
+  min-width: 0;
+}
+
+.rule__desc {
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--text-2);
+}
+
+.rule.is-off .rule__desc {
+  color: var(--text-3);
+}
+
+.rule__params {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+
+.param-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-5);
+}
+
+.param-row .check {
+  min-height: 32px;
+}
+
+/* 只读的参数值（例如固定不变的输出格式） */
+.param-value {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-h);
+  font-weight: 500;
+}
+
+.field--narrow {
+  max-width: 360px;
+}
+
+.rule__impact--muted {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.rule__impact .error-text {
+  white-space: nowrap;
+}
+
+/* ---------- 4. 列概况 ---------- */
+
+/* 和下面的对比表保持同一字号 */
+.profile-table {
+  font-size: var(--fs-base);
+}
+
+.profile-table td {
+  vertical-align: middle;
+}
+
+.profile-table .col-name {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+/* 最小值、最大值：不换行，数字等宽 */
+.profile-table .range {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 缺失数 + 一条细进度条 */
+.missing {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 172px;
+}
+
+.missing .progress {
+  flex: 1 1 auto;
+  height: 6px;
+}
+
+.samples {
+  min-width: 200px;
+  max-width: 380px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.samples span {
+  color: var(--text-1);
+}
+
+/* ---------- 5. 结果 ---------- */
+
+/* 逐条规则的改动明细：用原生 details / summary，键盘可达 */
+.rule-detail + .rule-detail {
+  border-top: 1px solid var(--border);
+}
+
+.rule-detail summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 44px;
+  padding: var(--sp-2) 18px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.rule-detail summary::-webkit-details-marker {
+  display: none;
+}
+
+.rule-detail summary:hover {
+  background: var(--surface-hover);
+}
+
+.rule-detail.is-static summary {
+  cursor: default;
+}
+
+.rule-detail__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 500;
+}
+
+/* 没有改动的规则：不能展开，只是一行说明 */
+.rule-detail__line {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 44px;
+  padding: var(--sp-2) 18px;
+}
+
+.rule-detail__count {
+  flex: none;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.rule-detail .icon--chevron {
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.rule-detail[open] .icon--chevron {
+  transform: rotate(180deg);
+}
+
+.rule-detail.is-static .rule-detail__name {
+  color: var(--text-2);
+}
+
+.rule-detail__body {
+  padding: 0 18px var(--sp-3) 46px;
+}
+
+.rule-errors__note {
+  margin-top: var(--sp-2);
+}
+
+/* 结果页顶部：没能执行的规则，按「发生了什么 / 为什么 / 怎么改」三行写 */
+.rule-error {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--sp-2);
+}
+
+.rule-error__title {
+  font-weight: 600;
+}
+
+/* 提示框里的条目列表（解析报告） */
+.report-list {
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.report-list li.is-danger {
+  color: var(--danger);
+}
+
+.change-list,
+.issue-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+.change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+}
+
+.change__where {
+  color: var(--text-2);
+}
+
+.change__arrow {
+  color: var(--text-3);
+}
+
+.change__val {
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  background: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.change__val--after {
+  background: var(--accent-tint);
+}
+
+.issue {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+}
+
+.issue__where {
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.note-more {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+/* 数据表格：自己在容器里滚动，表头和行号固定 */
+.datagrid-wrap {
+  overflow: auto;
+  max-height: min(64vh, 640px);
+  background: var(--surface-raised);
+}
+
+.card > .datagrid-wrap {
+  border-top: 0;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+
+/* 行数很少的预览表：不限高，整张表直接摊开 */
+.datagrid-wrap--auto {
+  max-height: none;
+}
+
+.datagrid {
+  font-size: var(--fs-base);
+}
+
+.datagrid th,
+.datagrid td {
+  padding: 6px 10px;
+}
+
+.datagrid th {
+  height: 36px;
+}
+
+/* 并排对比时表头有两行：第二行贴在第一行下面 */
+.datagrid thead tr:nth-child(2) th {
+  top: 36px;
+}
+
+.datagrid td {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.datagrid__rownum {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 56px;
+  text-align: right;
+  background: var(--surface-raised);
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+
+.datagrid th.datagrid__rownum {
+  z-index: 4;
+  background: var(--surface-sunken);
+}
+
+/* 并排对比时，被改过的列名也标出来 */
+.datagrid th.is-changed {
+  background: var(--accent-tint);
+}
+
+.datagrid__group {
+  text-align: center;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+/* 并排对比中间的分隔条 */
+.datagrid__side {
+  min-width: 12px;
+  padding: 0;
+  background: var(--surface-sunken);
+}
+
+/* 被删除的行：整行置灰划线。行号和「已删除」标记不划线，保证看得清 */
+.datagrid tr.is-removed > td {
+  background: var(--danger-tint);
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+.datagrid tr.is-removed > td.datagrid__rownum,
+.datagrid tr.is-removed > td.is-gone {
+  text-decoration: none;
+}
+
+.datagrid tr.is-removed > td.is-changed {
+  background: var(--danger-tint);
+}
+
+/* 行悬停时底色会盖住标记，这里把标记补回来 */
+.datagrid tbody tr:hover > td.datagrid__rownum {
+  background: var(--surface-hover);
+}
+
+.datagrid tbody tr:hover > td.is-changed {
+  background: var(--accent-tint);
+}
+
+.datagrid tbody tr.is-removed:hover > td {
+  background: var(--danger-tint);
+}
+
+.datagrid-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-5);
+  padding: var(--sp-2) 18px;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  vertical-align: -3px;
+}
+
+.legend-swatch--changed {
+  background: var(--accent-tint);
+}
+
+.legend-swatch--removed {
+  background: var(--danger-tint);
+}
+
+.card__header--wrap {
+  flex-wrap: wrap;
+}
+
+/* 对比表底部：左边页码信息，右边翻页按钮 */
+.compare-footer {
+  justify-content: space-between;
+}
+
+.pager__buttons {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+/* ---------- 6. 使用说明 ---------- */
+
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--sp-4);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.step__num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full);
+  background: var(--accent-tint-strong);
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.step h3 {
+  font-size: var(--fs-md);
+}
+
+.step p {
+  color: var(--text-2);
+}
+
+.step .small {
+  font-size: var(--fs-sm);
+}
+
+.fact-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.fact-list li {
+  position: relative;
+  padding-left: var(--sp-5);
+}
+
+.fact-list li::before {
+  content: "";
+  position: absolute;
+  left: var(--sp-2);
+  top: 0.72em;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--border-control);
+}
+
+.faq h4 {
+  font-size: var(--fs-base);
+  font-weight: 600;
+}
+
+.faq p {
+  margin-top: var(--sp-1);
+  color: var(--text-2);
+}
+
+/* ---------- 7. 对话框 ---------- */
+
+/* 轻提示里的数字也用等宽（ZDX.toast 只接收一段文字，没法给数字单独加 .num） */
+.toast {
+  font-variant-numeric: tabular-nums;
+}
+
+.dialog fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dialog legend {
+  margin-bottom: var(--sp-2);
+  padding: 0;
+}
+
+/* 不可选的选项（例如 JSON 只能用 UTF-8）整体变淡 */
+.check:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ---------- 8. 窄屏 ---------- */
+
+@media (max-width: 960px) {
+  .topbar__meta {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  /* 顶栏只留图标（按钮都写了 aria-label） */
+  .topbar__actions .btn {
+    width: var(--control-h-lg);
+    padding: 0;
+  }
+
+  .topbar__actions .btn__label {
+    display: none;
+  }
+
+  .import {
+    padding: var(--sp-3) var(--sp-4) var(--sp-4);
+  }
+
+  .import__options .switch {
+    margin-top: 0;
+  }
+
+  .rule {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rule::before {
+    display: none;
+  }
+
+  .rule__head,
+  .rule__body {
+    grid-column: 1;
+  }
+
+  .rule-detail__body {
+    padding-left: 18px;
+  }
+
+  .datagrid-wrap {
+    max-height: 72vh;
+  }
+}

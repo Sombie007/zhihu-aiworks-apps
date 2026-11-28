@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="table-cleaner">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>表格清洗 — 去重、补空、规范化，导出能直接用的 CSV | 折向东 · 工具箱</title>
+<meta name="description" content="粘贴或上传 CSV / TSV，在浏览器里完成去重、删空行、数字与日期规范化，数据不上传，导出可直接使用的表格文件。">
+<meta name="author" content="折向东">
+<meta name="robots" content="index,follow">
+<!--@favicon-->
+
+<!-- 公共资源引用（勿改写法） -->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<!-- 应用自己的文件 -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- 图标与标志 sprite（构建时内联到页面顶部，必须放在 body 第一个元素） -->
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="./" aria-label="表格清洗，折向东 · 工具箱">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-table-cleaner"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">表格清洗</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="功能导航">
+      <div class="nav__group">
+        <div class="nav__label">表格清洗</div>
+        <button class="nav__item" type="button" data-view="start" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg>
+          <span class="nav__item-text">开始</span>
+        </button>
+        <button class="nav__item" type="button" data-view="rules">
+          <svg class="icon" aria-hidden="true"><use href="#i-funnel"/></svg>
+          <span class="nav__item-text">清洗规则</span>
+          <span class="nav__count" id="nav-rules-count">7</span>
+        </button>
+        <button class="nav__item" type="button" data-view="columns">
+          <svg class="icon" aria-hidden="true"><use href="#i-chart-bar"/></svg>
+          <span class="nav__item-text">列概况</span>
+        </button>
+        <button class="nav__item" type="button" data-view="result">
+          <svg class="icon" aria-hidden="true"><use href="#i-check-badge"/></svg>
+          <span class="nav__item-text">结果与导出</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">说明</div>
+        <button class="nav__item" type="button" data-view="guide">
+          <svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg>
+          <span class="nav__item-text">使用说明</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+      <span>v2.0 · 数据只在本机处理</span>
+    </div>
+  </aside>
+
+  <!-- ================= 主区域 ================= -->
+  <div class="app__main">
+    <header class="topbar">
+      <span class="topbar__title" id="view-title">开始</span>
+      <span class="topbar__meta" id="topbar-meta" hidden></span>
+      <span class="topbar__busy" id="busy-indicator" role="status" hidden>
+        <span class="spinner" aria-hidden="true"></span>正在清洗
+      </span>
+      <span class="topbar__spacer"></span>
+      <!-- 每个按钮只在自己的视图里出现（data-for），需要数据的还带 data-needs="data" -->
+      <div class="topbar__actions">
+        <button class="btn btn--secondary" type="button" data-for="rules" id="btn-undo" aria-label="撤销上一步规则改动" title="撤销上一步（Ctrl / Cmd + Z）" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-uturn-left"/></svg>
+          <span class="btn__label">撤销上一步</span>
+        </button>
+        <button class="btn btn--secondary" type="button" data-for="rules" id="btn-reset-rules" aria-label="恢复默认规则" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-path"/></svg>
+          <span class="btn__label">恢复默认规则</span>
+        </button>
+        <button class="btn btn--secondary" type="button" data-for="start" data-needs="data" id="btn-clear" aria-label="清空数据" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>
+          <span class="btn__label">清空数据</span>
+        </button>
+        <button class="btn btn--secondary" type="button" data-for="result" data-needs="data" id="btn-copy" aria-label="复制到剪贴板" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-document-duplicate"/></svg>
+          <span class="btn__label">复制到剪贴板</span>
+        </button>
+        <button class="btn btn--secondary" type="button" data-for="result" data-needs="data" id="btn-recipe" aria-label="复制清洗配方" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-document-text"/></svg>
+          <span class="btn__label">复制清洗配方</span>
+        </button>
+        <button class="btn btn--primary" type="button" data-for="start columns result" data-needs="data" id="btn-export" aria-label="导出结果" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg>
+          <span class="btn__label">导出结果</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="content content--wide" id="main" tabindex="-1">
+
+      <!-- ================= 开始 ================= -->
+      <section class="view" data-view-panel="start">
+        <div class="section-head">
+          <div>
+            <h1>把脏表格洗成能直接导入的干净数据</h1>
+            <p class="muted">去重、删空行、统一数字和日期的写法。每条规则改了什么都看得见，全程在你的浏览器里完成，数据不上传。</p>
+          </div>
+        </div>
+
+        <!-- 没有数据：导入入口 -->
+        <div class="card" id="import-card">
+          <div class="card__body empty import-empty">
+            <svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg>
+            <div class="empty__title">还没有数据</div>
+            <p class="empty__text">把表格粘贴进来，或选择一个 CSV 文件。也可以先载入示例数据，看看每条规则各自改了什么。</p>
+            <div class="empty__actions">
+              <button class="btn btn--secondary" type="button" id="btn-load-sample">载入示例数据</button>
+              <button class="btn btn--secondary" type="button" id="btn-pick-file">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-folder-open"/></svg>选择文件
+              </button>
+            </div>
+          </div>
+
+          <form class="import" id="import-form" novalidate>
+            <div class="callout callout--danger" id="import-error" role="alert" tabindex="-1" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-exclamation-circle"/></svg>
+              <div class="callout__body"><div class="callout__title" id="import-error-title"></div><span id="import-error-body"></span></div>
+            </div>
+            <div class="callout callout--info" id="reimport-note" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+              <div class="callout__body"><div class="callout__title">页面里还载入着数据</div><span id="reimport-note-body"></span> <button class="btn btn--ghost btn--sm" type="button" id="btn-back-overview">返回数据概况</button></div>
+            </div>
+            <div class="dropzone" id="dropzone">
+              <label class="label" for="paste-area">粘贴表格内容</label>
+              <textarea class="textarea" id="paste-area" rows="9" spellcheck="false" autocomplete="off" placeholder="把表格内容粘贴到这里，支持逗号、制表符、分号分隔" aria-describedby="dl-status dl-hint"></textarea>
+              <div class="dropzone__hint" id="dl-hint">
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-up-tray"/></svg>
+                <span>也可以把 .csv、.tsv、.txt 文件拖到这个框里。文件只在本机读取，编码会自动识别（UTF-8 或 GB18030）。</span>
+              </div>
+            </div>
+            <div class="import__options">
+              <div class="field">
+                <span class="label" id="dl-label">分隔符</span>
+                <div class="segmented" role="group" aria-labelledby="dl-label" id="delimiter-seg">
+                  <button class="segmented__btn" type="button" data-dl="auto" aria-pressed="true">自动</button>
+                  <button class="segmented__btn" type="button" data-dl="comma" aria-pressed="false">逗号</button>
+                  <button class="segmented__btn" type="button" data-dl="tab" aria-pressed="false">制表符</button>
+                  <button class="segmented__btn" type="button" data-dl="semicolon" aria-pressed="false">分号</button>
+                  <button class="segmented__btn" type="button" data-dl="pipe" aria-pressed="false">竖线</button>
+                </div>
+                <span class="hint" id="dl-status">自动识别：粘贴内容后显示识别结果</span>
+              </div>
+              <label class="switch">
+                <input class="switch__input" type="checkbox" id="has-header" checked>
+                <span class="switch__track"></span>
+                <span>首行为表头</span>
+              </label>
+            </div>
+            <div class="import__actions">
+              <span class="import__status" id="import-status" role="status"></span>
+              <button class="btn btn--ghost" type="button" id="btn-clear-paste">清空输入</button>
+              <button class="btn btn--primary" type="submit" id="btn-start" disabled>开始清洗</button>
+            </div>
+          </form>
+        </div>
+        <input type="file" id="file-input" class="sr-only" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" tabindex="-1" aria-hidden="true">
+
+        <!-- 有数据：概况 -->
+        <div class="stack stack--6" id="data-overview" hidden>
+          <div class="callout callout--warning" id="parse-report" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-exclamation-triangle"/></svg>
+            <div class="callout__body"><div class="callout__title" id="parse-report-title"></div><ul class="report-list" id="parse-report-list"></ul></div>
+          </div>
+          <div class="callout callout--info" id="scale-hint" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+            <div class="callout__body"><div class="callout__title">数据较大</div>表格预览只显示前 200 行，导出不受影响。</div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-table-cells"/></svg>数据概况</span>
+              <span class="card__meta" id="overview-source"></span>
+            </div>
+            <div class="card__body stack">
+              <div class="stat-row" id="overview-stats"></div>
+              <dl class="kv" id="overview-facts"></dl>
+              <p class="small" id="overview-effect"></p>
+            </div>
+            <div class="card__footer">
+              <button class="btn btn--secondary" type="button" id="btn-goto-rules">调整清洗规则</button>
+              <button class="btn btn--secondary" type="button" id="btn-reimport">重新导入</button>
+              <button class="btn btn--primary" type="button" id="btn-goto-result">查看清洗结果</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title">原始数据预览</span>
+              <span class="card__meta" id="preview-meta">用前 10 行确认分隔符和编码都识别对了</span>
+            </div>
+            <div class="datagrid-wrap datagrid-wrap--auto">
+              <table class="table datagrid" id="preview-table"><caption class="sr-only">原始数据的前 10 行</caption></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 清洗规则 ================= -->
+      <section class="view view--max" data-view-panel="rules" hidden>
+        <div class="section-head">
+          <div>
+            <h2>清洗规则</h2>
+            <p class="muted">从上到下依次执行。改动任意一项，结果会立刻重算。</p>
+          </div>
+          <span class="section-head__meta" id="rules-meta"></span>
+        </div>
+
+        <div class="callout callout--info" id="rules-nodata">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <div class="callout__body"><div class="callout__title">还没有数据</div>规则可以先设好。载入数据后，每一项旁边会显示它实际影响了多少行、多少个单元格。</div>
+        </div>
+
+        <ol class="rule-list" id="rule-list">
+          <li class="rule is-on" data-rule="trim">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">去除首尾空白</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">去掉单元格首尾的半角空格、全角空格、制表符和不间断空格，中间的空白不动。</p>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="invisible">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">清理不可见字符</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">删除零宽字符、BOM 和换行以外的控制字符。单元格里的制表符换成空格，免得两边的字粘在一起。</p>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="emptyRows">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">删除全空行</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">整行所有单元格都是空的，就删掉这一行。</p>
+            </div>
+          </li>
+
+          <li class="rule is-off" data-rule="emptyCols">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on">
+                <span class="switch__track"></span>
+                <span class="rule__name">删除全空列</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">整列都是空的，就删掉这一列。默认不删，空列有时是有意留着的。</p>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="dedupe">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">整行去重</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">完全相同的行只保留第一次出现的那一行。它在「去除首尾空白」之后执行，所以那条规则开着时，只差首尾空白的行也算重复。</p>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="header">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">表头规范化</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">去掉列名首尾的空白和换行；空的列名填成「列 N」；重名的列名加序号，例如「金额」「金额 (2)」。</p>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="number">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">数字规范化</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">把 ¥12,800.50、$1,200 这样的金额变成纯数字 12800.50、1200，方便系统导入。</p>
+              <div class="rule__params" data-params>
+                <div class="param-row">
+                  <label class="check"><input class="check__input" type="checkbox" data-prop="thousands" checked><span class="check__box"></span><span class="check__label">去除千分位逗号</span></label>
+                  <label class="check"><input class="check__input" type="checkbox" data-prop="currency" checked><span class="check__box"></span><span class="check__label">去除货币符号</span></label>
+                  <label class="check"><input class="check__input" type="checkbox" data-prop="percent"><span class="check__box"></span><span class="check__label">百分号转小数</span></label>
+                  <label class="check"><input class="check__input" type="checkbox" data-prop="fullwidth" checked><span class="check__box"></span><span class="check__label">全角数字转半角</span></label>
+                </div>
+                <p class="hint">货币符号包括 ¥ ￥ $ € £ 元 美元。只有最后能得到纯数字的单元格才会改写；以 0 开头的编号（0012345）保留前导零，小数位数也保持原样。百分号转小数会把 95% 变成 0.95，所以默认不勾选。「全角数字转半角」不受「必须是纯数字」的限制，任何单元格里的全角数字都会转。</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="rule is-on" data-rule="date">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on" checked>
+                <span class="switch__track"></span>
+                <span class="rule__name">日期规范化</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">把各种写法的日期统一成 2023-03-12 这样的形式。</p>
+              <div class="rule__params" data-params>
+                <div class="form-grid">
+                  <div class="field">
+                    <label class="label" for="rule-date-ambiguous">日月顺序不明确的日期（如 03/04/2023）</label>
+                    <select class="select" id="rule-date-ambiguous" data-prop="ambiguous">
+                      <option value="keep">保留原值，并在结果里列出</option>
+                      <option value="dmy">按「日/月/年」解读</option>
+                      <option value="mdy">按「月/日/年」解读</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <span class="label">输出格式</span>
+                    <span class="param-value num">YYYY-MM-DD</span>
+                    <span class="hint">带时间的只补零，不改写时间部分</span>
+                  </div>
+                </div>
+                <p class="hint">能识别 2023-03-12、2023/3/12、2023年3月12日、20230312、2023.3.12 这几种写法。8 位纯数字和编号长得一样，只有所在列至少 90% 的非空值都是日期时才会转换。</p>
+              </div>
+            </div>
+          </li>
+
+          <li class="rule is-off" data-rule="fill">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on">
+                <span class="switch__track"></span>
+                <span class="rule__name">空值填充</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">把空单元格填成指定的占位文本，已有内容的单元格不动。</p>
+              <div class="rule__params" data-params hidden>
+                <div class="field field--narrow">
+                  <label class="label" for="rule-fill-text">占位文本</label>
+                  <input class="input" id="rule-fill-text" type="text" data-prop="text" value="（空）" maxlength="40" autocomplete="off">
+                  <span class="hint">有些系统导入时要求每个单元格都有内容，空单元格会让整行被拒绝。填一个统一的占位文本可以避免这种情况。</span>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="rule is-off" data-rule="replace">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on">
+                <span class="switch__track"></span>
+                <span class="rule__name">查找替换</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">在全部或指定的列里，把找到的内容替换掉。按普通文本替换时，每一处出现的位置都会被替换。</p>
+              <div class="rule__params" data-params hidden>
+                <div class="form-grid">
+                  <div class="field">
+                    <label class="label" for="rule-replace-scope">作用范围</label>
+                    <select class="select" id="rule-replace-scope" data-prop="scope">
+                      <option value="all">全表</option>
+                      <option value="cols">指定列</option>
+                    </select>
+                  </div>
+                  <label class="check">
+                    <input class="check__input" type="checkbox" id="rule-replace-regex" data-prop="regex">
+                    <span class="check__box"></span>
+                    <span class="check__label">按正则表达式<span class="check__desc">替换为里可以用 $1 引用第 1 个分组</span></span>
+                  </label>
+                  <div class="field">
+                    <label class="label" for="rule-replace-find">查找内容</label>
+                    <input class="input" id="rule-replace-find" type="text" data-prop="find" value="" autocomplete="off" spellcheck="false" placeholder="要查找的文字" aria-describedby="rule-replace-error">
+                    <span class="error-text" id="rule-replace-error" hidden></span>
+                  </div>
+                  <div class="field">
+                    <label class="label" for="rule-replace-with">替换为</label>
+                    <input class="input" id="rule-replace-with" type="text" data-prop="replacement" value="" autocomplete="off" spellcheck="false" placeholder="留空表示删除">
+                  </div>
+                </div>
+                <div class="field" id="rule-replace-cols" hidden>
+                  <span class="label">选择要替换的列</span>
+                  <div class="chip-row" id="replace-col-chips" role="group" aria-label="选择要替换的列"></div>
+                  <span class="hint" id="replace-col-hint" hidden>载入数据后，这里会列出所有的列。</span>
+                  <span class="error-text" id="rule-replace-cols-error" hidden></span>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li class="rule is-off" data-rule="englishCase">
+            <div class="rule__head">
+              <label class="switch">
+                <input class="switch__input" type="checkbox" data-prop="on">
+                <span class="switch__track"></span>
+                <span class="rule__name">英文大小写</span>
+              </label>
+              <span class="rule__impact" data-impact></span>
+            </div>
+            <div class="rule__body">
+              <p class="rule__desc">统一纯英文字母单元格的大小写，例如 VIP、Standard。含数字或中文的单元格不受影响。</p>
+              <div class="rule__params" data-params hidden>
+                <div class="field field--narrow">
+                  <label class="label" for="rule-case-mode">处理方式</label>
+                  <select class="select" id="rule-case-mode" data-prop="mode">
+                    <option value="none">不改</option>
+                    <option value="lower">全部小写</option>
+                    <option value="upper">全部大写</option>
+                    <option value="title">首字母大写（每个单词）</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ================= 列概况 ================= -->
+      <section class="view" data-view-panel="columns" hidden>
+        <div class="section-head">
+          <div>
+            <h2>列概况</h2>
+            <p class="muted">每一列的类型、缺失和取值范围，用来判断清洗结果能不能直接用。</p>
+          </div>
+        </div>
+
+        <div class="card" id="columns-nodata">
+          <div class="card__body empty">
+            <svg class="icon" aria-hidden="true"><use href="#i-chart-bar"/></svg>
+            <div class="empty__title">还没有数据</div>
+            <p class="empty__text">载入数据后，这里一列一行地列出识别类型、缺失率、唯一值数、最小值和最大值。</p>
+            <div class="empty__actions">
+              <button class="btn btn--primary" type="button" data-goto="start">去导入数据</button>
+              <button class="btn btn--secondary" type="button" data-action="load-sample">载入示例数据</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack" id="columns-body" hidden>
+          <div class="row row--between row--wrap">
+            <div class="segmented" role="group" aria-label="统计口径" id="profile-mode">
+              <button class="segmented__btn" type="button" data-profile="cleaned" aria-pressed="true">清洗后</button>
+              <button class="segmented__btn" type="button" data-profile="original" aria-pressed="false">清洗前</button>
+            </div>
+            <span class="small muted" id="columns-meta"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="table profile-table" id="profile-table">
+              <caption class="sr-only">每一列的类型、缺失、唯一值数、最小值、最大值和示例值</caption>
+              <thead>
+                <tr>
+                  <th scope="col">列名</th>
+                  <th scope="col">类型</th>
+                  <th scope="col">缺失</th>
+                  <th scope="col" class="num">唯一值</th>
+                  <th scope="col">最小值</th>
+                  <th scope="col">最大值</th>
+                  <th scope="col">示例值</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="small muted">类型按这条标准判定：一列的非空值里至少 90% 能解析成同一种类型。以 0 开头的编号算文本。只有数值、百分比、货币和日期列才有最小值和最大值，按数值或日期比较，显示的是原来的写法。</p>
+        </div>
+      </section>
+
+      <!-- ================= 结果与导出 ================= -->
+      <section class="view" data-view-panel="result" hidden>
+        <div class="section-head">
+          <div>
+            <h2>清洗结果</h2>
+            <p class="muted">先看统计数字，再逐条规则核对改动，确认无误后导出。</p>
+          </div>
+        </div>
+
+        <div class="card" id="result-nodata">
+          <div class="card__body empty">
+            <svg class="icon" aria-hidden="true"><use href="#i-check-badge"/></svg>
+            <div class="empty__title">还没有数据</div>
+            <p class="empty__text">载入数据后，这里会列出清洗前后的行数变化、每条规则改了哪些单元格，以及可以逐行核对的对比表。</p>
+            <div class="empty__actions">
+              <button class="btn btn--primary" type="button" data-goto="start">去导入数据</button>
+              <button class="btn btn--secondary" type="button" data-action="load-sample">载入示例数据</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack stack--6" id="result-body" hidden>
+          <div class="callout callout--danger" id="rule-errors" role="alert" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-exclamation-circle"/></svg>
+            <div class="callout__body">
+              <div class="callout__title">有规则没有执行</div>
+              <div id="rule-errors-body"></div>
+              <p class="small rule-errors__note">下面的结果是按其余规则算出来的。修正后结果会自动更新。</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__body">
+              <div class="stat-row" id="result-stats"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-list-bullet"/></svg>每条规则的改动</span>
+                <span class="card__meta">行号按原始数据计，表头是第 1 行</span>
+              </div>
+              <div class="rule-details" id="rule-details"></div>
+            </div>
+            <div class="stack">
+              <div class="card" id="date-issues-card">
+                <div class="card__header">
+                  <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-calendar-days"/></svg>没有规范化的日期</span>
+                  <span class="card__meta" id="date-issues-meta"></span>
+                </div>
+                <div class="card__body" id="date-issues"></div>
+              </div>
+              <div class="card" id="removed-card">
+                <div class="card__header">
+                  <span class="card__title">被删除的行</span>
+                  <span class="card__meta" id="removed-meta"></span>
+                </div>
+                <div class="card__body" id="removed-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header card__header--wrap">
+              <div class="segmented" role="group" aria-label="对比方式" id="compare-mode">
+                <button class="segmented__btn" type="button" data-mode="cleaned" aria-pressed="true">清洗后</button>
+                <button class="segmented__btn" type="button" data-mode="original" aria-pressed="false">原始</button>
+                <button class="segmented__btn" type="button" data-mode="compare" aria-pressed="false">并排对比</button>
+              </div>
+              <label class="switch">
+                <input class="switch__input" type="checkbox" id="show-removed">
+                <span class="switch__track"></span>
+                <span>显示被删除的行</span>
+              </label>
+              <span class="card__meta" id="compare-meta"></span>
+            </div>
+            <div class="datagrid-wrap">
+              <table class="table datagrid" id="compare-table">
+              </table>
+            </div>
+            <div class="datagrid-legend">
+              <span><span class="legend-swatch legend-swatch--changed" aria-hidden="true"></span>改动过的单元格</span>
+              <span><span class="legend-swatch legend-swatch--removed" aria-hidden="true"></span>被删除的行</span>
+              <span><span class="cell-empty" aria-hidden="true"></span>空单元格</span>
+            </div>
+            <div class="card__footer compare-footer">
+              <span class="small muted" id="pager-info"></span>
+              <div class="pager__buttons">
+                <button class="btn btn--secondary btn--sm" type="button" id="pager-prev" aria-label="上一页">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-left"/></svg>上一页
+                </button>
+                <button class="btn btn--secondary btn--sm" type="button" id="pager-next" aria-label="下一页">
+                  下一页<svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 使用说明 ================= -->
+      <section class="view view--max" data-view-panel="guide" hidden>
+        <div class="section-head">
+          <div>
+            <h2>使用说明</h2>
+            <p class="muted">四步把一份脏表格变成能直接导入的数据。</p>
+          </div>
+        </div>
+
+        <ol class="steps">
+          <li class="step">
+            <span class="step__num" aria-hidden="true">1</span>
+            <h3>粘贴或上传</h3>
+            <p>把表格内容粘进输入框，或者选择、拖入 .csv、.tsv、.txt 文件。分隔符和编码都会自动识别；分隔符识别得不对，可以手动选一种。</p>
+            <p class="small muted">快捷键：<span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> 开始清洗</p>
+          </li>
+          <li class="step">
+            <span class="step__num" aria-hidden="true">2</span>
+            <h3>勾选规则</h3>
+            <p>11 条规则默认开了 7 条，每条旁边都标着它影响了多少行、多少个单元格。改错了可以撤销，最多保留 20 步。</p>
+            <p class="small muted">快捷键：<span class="kbd">Ctrl</span> + <span class="kbd">Z</span> 撤销上一步</p>
+          </li>
+          <li class="step">
+            <span class="step__num" aria-hidden="true">3</span>
+            <h3>看变化</h3>
+            <p>「结果与导出」里有前后对比：改动过的单元格有底色，可以切到「并排对比」逐行核对，被删除的行也能显示出来。</p>
+          </li>
+          <li class="step">
+            <span class="step__num" aria-hidden="true">4</span>
+            <h3>导出</h3>
+            <p>选好格式和编码就能导出，文件名默认是 cleaned_日期_时间。用 Excel 打开中文乱码时，选「UTF-8 带 BOM」。</p>
+            <p class="small muted">快捷键：<span class="kbd">Ctrl</span> + <span class="kbd">S</span> 打开导出窗口</p>
+          </li>
+        </ol>
+        <p class="small muted">Mac 上把 Ctrl 换成 Cmd。</p>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-exclamation-triangle"/></svg>能力边界</span>
+            </div>
+            <div class="card__body">
+              <ul class="fact-list">
+                <li>不能直接读取 .xlsx，请在 Excel / WPS 里「另存为 CSV」后再上传；</li>
+                <li>日月顺序不明确的日期不会被自动改写；</li>
+                <li>一切在本机浏览器内完成，关闭页面后数据不会保留；</li>
+                <li>预览最多显示前 200 行，导出的是完整数据；</li>
+                <li>8 位纯数字的日期靠整列判断。如果一整列编号恰好都是合法日期，会被误当成日期，请先关闭「日期规范化」；</li>
+                <li>千分位只按 1,234.56 这种写法识别，1.234,56 这种写法不改；</li>
+                <li>「清洗配方」是给人看的说明，不能导入工具自动执行。</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-shield-check"/></svg>隐私说明</span>
+            </div>
+            <div class="card__body">
+              <p class="measure">本工具不联网传输任何表格数据，所有解析、清洗、导出都在你的浏览器里完成。页面只从字体服务加载字体文件，不包含统计或追踪脚本。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title">常见问题</span>
+          </div>
+          <div class="card__body stack">
+            <div class="faq">
+              <h4>用 Excel 打开导出的文件，中文是乱码</h4>
+              <p>在导出窗口里选「UTF-8 带 BOM」。如果旧版 Excel 仍然乱码，改选「GB18030」。emoji 这类字符在 GB18030 里要占四个字节，只认识 GBK 的老软件可能显示不出来。</p>
+            </div>
+            <div class="faq">
+              <h4>为什么 0012345 这样的编号没有被转成数字</h4>
+              <p>这是刻意保留的。客户编号、区号、邮编开头的 0 有意义，转成数字就丢了。如果确实需要转成数字，可以用「查找替换」：作用范围选这一列，勾上「按正则表达式」，查找内容填 ^0+，替换为留空。注意这一列里不能有小数（0.5 会变成 .5），也不能有单独的 0。</p>
+            </div>
+            <div class="faq">
+              <h4>03/04/2023 这样的日期为什么没变</h4>
+              <p>它可能是 3 月 4 日，也可能是 4 月 3 日，工具不替你猜。如果确定数据的来源习惯，在「日期规范化」里选按「日/月/年」或「月/日/年」解读。25/04/2023 这种日或月大于 12 的写法可以直接判断，会自动转换。</p>
+            </div>
+            <div class="faq">
+              <h4>怎么处理 .xlsx 文件</h4>
+              <p>在 Excel 或 WPS 里「另存为 CSV」。「CSV UTF-8」和普通的「CSV」都可以，上传后编码会自动识别。</p>
+            </div>
+            <div class="faq">
+              <h4>导出的 TSV 里，单元格内的换行没有了</h4>
+              <p>TSV 没有转义的办法，单元格里的制表符和换行会被换成空格，否则行列会乱。需要保留换行请导出 CSV 或 JSON。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ================= 对话框 ================= -->
+
+<!-- 导出 -->
+<dialog class="dialog" id="export-dialog" aria-labelledby="export-title">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="export-title">导出结果</h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框">
+      <svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg>
+    </button>
+    <form class="dialog__body" id="export-form" novalidate>
+      <p class="small muted" id="export-summary"></p>
+      <fieldset>
+        <legend class="label">格式</legend>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-format" value="csv" checked>
+          <span class="check__box"></span>
+          <span class="check__label">CSV<span class="check__desc">逗号分隔，绝大多数系统都能导入</span></span>
+        </label>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-format" value="tsv">
+          <span class="check__box"></span>
+          <span class="check__label">TSV<span class="check__desc">制表符分隔，可以直接贴进 Excel；单元格里的换行会换成空格</span></span>
+        </label>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-format" value="json">
+          <span class="check__box"></span>
+          <span class="check__label">JSON<span class="check__desc">对象数组，每行一个对象，值都是文本</span></span>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend class="label">编码</legend>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-encoding" value="utf-8" checked>
+          <span class="check__box"></span>
+          <span class="check__label">UTF-8<span class="check__desc">通用</span></span>
+        </label>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-encoding" value="utf-8-bom">
+          <span class="check__box"></span>
+          <span class="check__label">UTF-8 带 BOM<span class="check__desc">Excel 直接打开不乱码</span></span>
+        </label>
+        <label class="check check--radio">
+          <input class="check__input" type="radio" name="export-encoding" value="gb18030">
+          <span class="check__box"></span>
+          <span class="check__label">GB18030<span class="check__desc">旧版 Excel。emoji 这类字符会写成四个字节，只认识 GBK 的老软件可能显示不出来</span></span>
+        </label>
+      </fieldset>
+      <label class="check" id="export-header-row">
+        <input class="check__input" type="checkbox" id="export-header" checked>
+        <span class="check__box"></span>
+        <span class="check__label">第一行写列名</span>
+      </label>
+      <div class="field">
+        <label class="label" for="export-name">文件名</label>
+        <input class="input" id="export-name" type="text" autocomplete="off" spellcheck="false" aria-describedby="export-hint">
+      </div>
+      <p class="hint" id="export-hint"></p>
+    </form>
+    <div class="dialog__footer">
+      <button class="btn btn--secondary" type="button" data-close>取消导出</button>
+      <button class="btn btn--primary" type="button" id="btn-export-confirm">导出 CSV</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- 清空数据、恢复默认规则等需要二次确认的操作共用这一个对话框，文字由脚本填入 -->
+<dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="confirm-title"></h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框">
+      <svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg>
+    </button>
+    <div class="dialog__body">
+      <p id="confirm-body"></p>
+    </div>
+    <div class="dialog__footer">
+      <button class="btn btn--secondary" type="button" data-close id="confirm-cancel"></button>
+      <button class="btn" type="button" id="confirm-ok"></button>
+    </div>
+  </div>
+</dialog>
+
+<!-- 公共脚本（勿改写法） -->
+<script src="../../design/shared.js"></script>
+<!-- 应用自己的文件 -->
+<script src="core.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

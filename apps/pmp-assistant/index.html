@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="pmp-assistant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMP 助手 — 考试大纲速查、挣值计算、风险登记册、考点速记 | 折向东 · 工具箱</title>
+<meta name="description" content="对照 PMI 2026 年 7 月更新的 PMP 考试内容大纲，速查三大领域 26 项任务；计算挣值指标；按项目类型和阶段生成风险登记册；按领域刷考点卡。">
+<meta name="author" content="折向东">
+<meta name="robots" content="index,follow">
+<!--@favicon-->
+
+<!-- 公共资源引用（勿改写法） -->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<!-- 应用自己的文件 -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- 图标与标志 sprite（构建时内联到页面顶部，必须放在 body 第一个元素） -->
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="./" aria-label="PMP 助手，折向东 · 工具箱">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-pmp-assistant"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">PMP® 助手</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="功能导航">
+      <div class="nav__group">
+        <div class="nav__label">PMP 备考</div>
+        <button class="nav__item" type="button" data-view="overview" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-square-2-stack"/></svg>
+          <span class="nav__item-text">概览</span>
+        </button>
+        <button class="nav__item" type="button" data-view="eco">
+          <svg class="icon" aria-hidden="true"><use href="#i-document-text"/></svg>
+          <span class="nav__item-text">考试大纲速查</span>
+        </button>
+        <button class="nav__item" type="button" data-view="evm">
+          <svg class="icon" aria-hidden="true"><use href="#i-calculator"/></svg>
+          <span class="nav__item-text">挣值计算器</span>
+        </button>
+        <button class="nav__item" type="button" data-view="risk">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield-exclamation"/></svg>
+          <span class="nav__item-text">风险登记册</span>
+        </button>
+        <button class="nav__item" type="button" data-view="cards">
+          <svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg>
+          <span class="nav__item-text">考点速记卡</span>
+          <span class="nav__count" id="nav-cards-count" hidden></span>
+        </button>
+        <button class="nav__item" type="button" data-view="about">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <span class="nav__item-text">关于本工具</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+      <span>v2.0 · 学习进度只保存在本机</span>
+    </div>
+  </aside>
+
+  <!-- ================= 主区域 ================= -->
+  <div class="app__main">
+    <header class="topbar">
+      <span class="topbar__title" id="view-title">概览</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions" id="topbar-actions">
+        <button class="btn btn--primary" type="button" data-for-view="risk" id="btn-add-risk" hidden>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-plus"/></svg>添加自定义风险
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+
+      <!-- ================= 概览 ================= -->
+      <section class="view" data-view-panel="overview">
+        <div class="section-head">
+          <div>
+            <h1>备考时对照大纲刷考点，做项目时算挣值、排风险</h1>
+            <p class="muted overview__lead">PMP 助手把考试大纲速查、挣值计算器、风险登记册和考点速记卡放在一处。四个模块各自独立，数据只保存在本机。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__body stack--4">
+            <h2 class="overview__sub">内容依据</h2>
+            <ul class="source-list" id="overview-sources"></ul>
+            <p class="small muted overview__trademark" id="overview-trademark"></p>
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <div class="callout__body">
+            <div class="callout__title">非官方资料</div>
+            <span id="overview-disclaimer"></span>
+          </div>
+        </div>
+
+        <div class="quick-grid" id="quick-cards"></div>
+
+        <div class="section-head">
+          <h2 class="overview__sub">四个模块</h2>
+          <span class="section-head__meta">点击卡片进入</span>
+        </div>
+        <div class="module-grid" id="module-list"></div>
+      </section>
+
+      <!-- ================= 考试大纲速查 ================= -->
+      <section class="view" data-view-panel="eco" hidden>
+        <div class="section-head">
+          <div>
+            <h2>考试大纲速查</h2>
+            <p class="muted eco__source" id="eco-source"></p>
+          </div>
+          <span class="section-head__meta num" id="eco-meta"></span>
+        </div>
+
+        <div class="row row--wrap row--between toolbar">
+          <div class="segmented" role="tablist" aria-label="大纲内容" id="eco-tabs">
+            <button class="segmented__btn" type="button" role="tab" id="eco-tab-tasks" data-tab="tasks" aria-selected="true" aria-controls="eco-panel-tasks" tabindex="0">领域与任务</button>
+            <button class="segmented__btn" type="button" role="tab" id="eco-tab-eligibility" data-tab="eligibility" aria-selected="false" aria-controls="eco-panel-eligibility" tabindex="-1">报考资格</button>
+            <button class="segmented__btn" type="button" role="tab" id="eco-tab-renewal" data-tab="renewal" aria-selected="false" aria-controls="eco-panel-renewal" tabindex="-1">续证与补考</button>
+          </div>
+          <div class="search toolbar__search">
+            <svg class="icon" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+            <input class="input" type="search" id="eco-search" placeholder="搜索任务或关键词，例如“风险”" aria-label="搜索大纲内容" autocomplete="off">
+          </div>
+        </div>
+        <p class="small search-status" id="eco-search-status" aria-live="polite"></p>
+
+        <div class="stack--6" role="tabpanel" id="eco-panel-tasks" aria-labelledby="eco-tab-tasks" data-panel="tasks">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-hashtag"/></svg>考试形式</span>
+            </div>
+            <div class="card__body"><dl class="facts" id="eco-facts"></dl></div>
+          </div>
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-chart-bar"/></svg>三大领域与任务</span>
+              <span class="card__meta">
+                <button class="btn btn--ghost btn--sm" type="button" id="eco-expand"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-double-down"/></svg>展开全部领域</button>
+                <button class="btn btn--ghost btn--sm" type="button" id="eco-collapse"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-double-up"/></svg>折叠全部领域</button>
+              </span>
+            </div>
+            <div id="eco-domains"></div>
+          </div>
+        </div>
+
+        <div class="stack--6" role="tabpanel" id="eco-panel-eligibility" aria-labelledby="eco-tab-eligibility" data-panel="eligibility" hidden>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr><th scope="col">教育背景</th><th scope="col" class="num">最少项目管理经验</th></tr>
+              </thead>
+              <tbody id="eco-paths"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-document-check"/></svg>通用要求</span></div>
+            <div class="card__body"><ul class="fact-list" id="eco-rules"></ul></div>
+          </div>
+          <p class="small muted">报考条件以 PMI 及中国国际人才交流基金会发布的最新信息为准。</p>
+        </div>
+
+        <div class="grid grid-2" role="tabpanel" id="eco-panel-renewal" aria-labelledby="eco-tab-renewal" data-panel="renewal" hidden>
+          <div class="card">
+            <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-path"/></svg>续证</span></div>
+            <div class="card__body stack--4">
+              <div class="stat-row" id="eco-renewal-stats"></div>
+              <p class="small" data-s id="eco-renewal-text"></p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-arrow-uturn-right"/></svg>补考</span></div>
+            <div class="card__body stack--4">
+              <div class="stat-row" id="eco-retake-stats"></div>
+              <p class="small" data-s id="eco-retake-text"></p>
+              <p class="small" data-s id="eco-retake-reapply"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 挣值计算器 ================= -->
+      <section class="view" data-view-panel="evm" hidden>
+        <div class="section-head">
+          <div>
+            <h2>挣值计算器</h2>
+            <p class="muted">输入 PV、EV、AC、BAC 四个数，得到成本与进度的偏差、指数和完工预测。</p>
+          </div>
+        </div>
+
+        <div class="evm-grid">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-calculator"/></svg>输入</span>
+              <span class="card__meta">单位：元</span>
+            </div>
+            <div class="card__body stack--4">
+              <div class="form-grid form-grid--2" id="evm-form"></div>
+              <div class="stack--2">
+                <span class="label">载入示例</span>
+                <div class="row row--wrap" id="evm-presets"></div>
+              </div>
+              <div class="row row--between">
+                <button class="btn btn--ghost btn--sm" type="button" id="evm-clear">清空数值</button>
+                <span class="xs muted">输入后自动计算</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stack--4">
+            <div class="callout callout--info" id="evm-summary" aria-live="polite">
+              <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+              <div class="callout__body">
+                <div class="callout__title" id="evm-summary-title"></div>
+                <span id="evm-summary-text"></span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card__header"><span class="card__title">当前绩效</span></div>
+              <div class="card__body"><div class="kpi-grid" id="evm-kpis"></div></div>
+            </div>
+            <div class="card">
+              <div class="card__header">
+                <span class="card__title">完工预测</span>
+                <span class="card__meta">切换算法，完工估算及其派生指标随之变化</span>
+              </div>
+              <div class="card__body stack--4">
+                <div class="stack--2">
+                  <div class="segmented" role="group" aria-label="完工估算（EAC）的算法" id="evm-methods"></div>
+                  <p class="small muted" id="evm-assume" aria-live="polite"></p>
+                </div>
+                <div class="metrics" id="evm-forecast"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header">
+            <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-chart-bar"/></svg>PV、EV、AC 对比</span>
+            <span class="card__meta num" id="evm-bac-meta"></span>
+          </div>
+          <div class="card__body stack--3">
+            <svg class="chart" id="evm-chart" viewBox="0 0 560 260" role="img" aria-labelledby="evm-chart-title evm-chart-desc">
+              <title id="evm-chart-title">计划价值、挣值与实际成本的柱状对比</title>
+              <desc id="evm-chart-desc"></desc>
+              <defs>
+                <pattern id="evm-hatch" class="chart__hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <line x1="0" y1="0" x2="0" y2="8" stroke="currentColor" stroke-width="1.5"></line>
+                </pattern>
+              </defs>
+            </svg>
+            <div class="chart-legend" id="evm-legend"></div>
+          </div>
+        </div>
+
+        <div class="callout callout--info">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <div class="callout__body"><span id="evm-note"></span></div>
+        </div>
+      </section>
+
+      <!-- ================= 风险登记册 ================= -->
+      <section class="view" data-view-panel="risk" hidden>
+        <div class="section-head">
+          <div>
+            <h2>风险登记册</h2>
+            <p class="muted">选择项目类型和关注领域，得到一份可以增删改的风险清单。风险值 = 概率 P × 影响 I，清单按风险值从高到低排列。</p>
+          </div>
+          <span class="section-head__meta" id="risk-meta"></span>
+        </div>
+
+        <div class="card">
+          <div class="card__body stack--4">
+            <div class="filter-row">
+              <span class="label" id="risk-types-label">项目类型</span>
+              <div class="pick-row" role="radiogroup" aria-labelledby="risk-types-label" id="risk-types"></div>
+            </div>
+            <div class="filter-row">
+              <span class="label" id="risk-focus-label">关注领域</span>
+              <div class="pick-row" role="radiogroup" aria-labelledby="risk-focus-label" id="risk-focuses"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="risk-grid">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-squares-2x2"/></svg>5 × 5 风险矩阵</span>
+              <span class="card__meta">行：概率　列：影响</span>
+            </div>
+            <div class="card__body stack--4">
+              <div class="matrix-wrap" id="risk-matrix"></div>
+              <p class="xs muted">格内数字是落在这一格的风险条数；颜色按风险值分四档。</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-chart-bar"/></svg>概览</span></div>
+            <div class="card__body stack--4">
+              <div class="stat-row" id="risk-stats"></div>
+              <ul class="legend" id="risk-legend"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__header risk-list-head">
+            <span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-list-bullet"/></svg>风险清单</span>
+            <span class="card__meta risk-actions">
+              <button class="btn btn--secondary btn--sm" type="button" id="risk-export-csv"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg>导出 CSV</button>
+              <button class="btn btn--secondary btn--sm" type="button" id="risk-export-md"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg>导出 Markdown</button>
+              <button class="btn btn--secondary btn--sm" type="button" id="risk-copy"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-clipboard-document"/></svg>复制清单</button>
+              <button class="btn btn--ghost btn--sm" type="button" id="risk-reset"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-uturn-left"/></svg>恢复默认清单</button>
+            </span>
+          </div>
+          <div class="risk-list" id="risk-list"></div>
+          <div class="card__footer" id="risk-list-foot" hidden>
+            <button class="btn btn--secondary btn--sm" type="button" id="risk-more"></button>
+          </div>
+        </div>
+
+        <p class="small muted" id="risk-basis"></p>
+      </section>
+
+      <!-- ================= 考点速记卡 ================= -->
+      <section class="view" data-view-panel="cards" hidden>
+        <div class="section-head">
+          <div>
+            <h2>考点速记卡</h2>
+            <p class="muted">一屏一张卡：先想答案，再翻面核对。标“还不会”的卡会在本轮里隔几张再次出现。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__body stack--4">
+            <div class="filter-row">
+              <span class="label" id="cards-domain-label">领域</span>
+              <div class="chip-row" role="group" aria-labelledby="cards-domain-label" id="cards-f-domain"></div>
+            </div>
+            <div class="filter-row">
+              <span class="label" id="cards-level-label">难度</span>
+              <div class="chip-row" role="group" aria-labelledby="cards-level-label" id="cards-f-level"></div>
+            </div>
+            <div class="filter-row">
+              <span class="label" id="cards-status-label">状态</span>
+              <div class="chip-row" role="group" aria-labelledby="cards-status-label" id="cards-f-status"></div>
+            </div>
+            <div class="filter-row">
+              <label class="label" for="cards-search">搜索</label>
+              <div class="row row--wrap cards-search-row">
+                <div class="search grow">
+                  <svg class="icon" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+                  <input class="input" type="search" id="cards-search" placeholder="搜索题目、答案或依据" autocomplete="off">
+                </div>
+                <button class="btn btn--secondary" type="button" id="cards-shuffle" aria-pressed="false"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrows-right-left"/></svg>打乱顺序</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="stack--4">
+            <div class="fc" id="fc" data-flipped="false">
+              <div class="fc__inner">
+                <div class="fc__face fc__front" id="fc-front-face">
+                  <div class="fc__tags" id="fc-tags"></div>
+                  <p class="fc__text" id="fc-front"></p>
+                  <p class="fc__hint">想一想，再翻面核对答案</p>
+                </div>
+                <div class="fc__face fc__back" id="fc-back" aria-hidden="true">
+                  <div class="fc__tags" id="fc-back-tags"></div>
+                  <ul class="fc__answer" id="fc-answer"></ul>
+                  <p class="fc__note" id="fc-note" hidden></p>
+                </div>
+              </div>
+              <button class="fc__hit" type="button" id="fc-hit" aria-expanded="false" aria-controls="fc-back" aria-label="翻面，显示答案"></button>
+            </div>
+
+            <div class="card" id="cards-empty" hidden></div>
+
+            <div class="row row--between row--wrap fc-controls" id="fc-controls">
+              <div class="btn-group">
+                <button class="btn btn--secondary" type="button" id="cards-prev"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-left"/></svg>上一张</button>
+                <button class="btn btn--primary" type="button" id="cards-flip"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-path"/></svg>翻面</button>
+                <button class="btn btn--secondary" type="button" id="cards-next">下一张<svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn--secondary" type="button" id="cards-again"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-uturn-left"/></svg>还不会<span class="kbd">1</span></button>
+                <button class="btn btn--secondary" type="button" id="cards-known"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>掌握了<span class="kbd">2</span></button>
+              </div>
+            </div>
+            <p class="small muted fc-progress" id="fc-progress" aria-live="polite"></p>
+            <p class="xs muted"><span class="strong">快捷键</span>　<span class="kbd">空格</span> 翻面　<span class="kbd">←</span> <span class="kbd">→</span> 上一张 / 下一张　<span class="kbd">1</span> 还不会　<span class="kbd">2</span> 掌握了</p>
+          </div>
+
+          <aside class="card cards-aside" aria-labelledby="cards-aside-title">
+            <div class="card__body stack--4">
+              <div class="row row--between">
+                <h3 class="cards-aside__title" id="cards-aside-title">掌握进度</h3>
+                <span class="small num" id="cards-known-count"></span>
+              </div>
+              <div class="progress" id="cards-progress" role="progressbar" aria-label="全部考点卡中已掌握的占比" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="progress__bar" id="cards-progress-bar"></div>
+              </div>
+              <dl class="kv" id="cards-status"></dl>
+              <div>
+                <h4 class="small strong cards-aside__sub">按领域</h4>
+                <ul class="bars" id="cards-domain-bars"></ul>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" id="cards-clear"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-trash"/></svg>清除学习记录</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ================= 关于本工具 ================= -->
+      <section class="view" data-view-panel="about" hidden>
+        <div class="section-head">
+          <div>
+            <h2>关于本工具</h2>
+            <p class="muted">版本 <span class="num" id="about-version"></span>　·　折向东 · 工具箱　·　纯静态网页，所有计算都在浏览器本地完成</p>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card__header"><span class="card__title">内容依据与出处</span></div>
+            <div class="card__body stack--4">
+              <ul class="source-list" id="about-sources"></ul>
+              <ul class="fact-list" id="about-notes"></ul>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__header"><span class="card__title">免责声明与商标说明</span></div>
+            <div class="card__body stack--3">
+              <p id="about-disclaimer"></p>
+              <p class="small muted" id="about-trademark"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2 class="overview__sub">考点卡的构成</h2>
+          <span class="section-head__meta num" id="about-cards-meta"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">依据</th><th scope="col" class="num">张数</th><th scope="col">说明</th></tr></thead>
+            <tbody id="about-basis"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card__header"><span class="card__title"><svg class="icon" aria-hidden="true"><use href="#i-circle-stack"/></svg>本机保存的数据</span></div>
+          <div class="card__body">
+            <div class="row row--between row--wrap gap">
+              <p class="small grow" id="about-local"></p>
+              <button class="btn btn--danger" type="button" id="btn-clear-all"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-trash"/></svg>清除本机记录</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= 通用确认对话框 ================= -->
+<dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="confirm-title"></h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框"><svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg></button>
+    <div class="dialog__body"><p class="small" id="confirm-body"></p></div>
+    <div class="dialog__footer">
+      <button class="btn btn--secondary" type="button" data-close id="confirm-cancel">保留</button>
+      <button class="btn btn--danger" type="button" id="confirm-ok"></button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ================= 添加 / 编辑风险 ================= -->
+<dialog class="dialog" id="risk-dialog" aria-labelledby="risk-dialog-title">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="risk-dialog-title">添加自定义风险</h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框"><svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg></button>
+    <form class="dialog__body" id="risk-form" novalidate>
+      <div class="field">
+        <span class="label" id="risk-kind-label">风险类型</span>
+        <div class="pick-row" role="radiogroup" aria-labelledby="risk-kind-label">
+          <label class="pick"><input class="pick__input" type="radio" name="risk-kind" value="threat" checked><span class="pick__text">威胁</span></label>
+          <label class="pick"><input class="pick__input" type="radio" name="risk-kind" value="opportunity"><span class="pick__text">机会</span></label>
+        </div>
+        <span class="hint">威胁是不利的风险，机会是有利的风险；选项决定下面能选哪些应对策略。</span>
+      </div>
+      <div class="field">
+        <label class="label" for="risk-title">风险标题</label>
+        <input class="input" id="risk-title" maxlength="80" autocomplete="off" aria-describedby="risk-title-err">
+        <span class="error-text" id="risk-title-err" hidden><svg class="icon icon--sm" aria-hidden="true"><use href="#i-exclamation-circle"/></svg><span></span></span>
+      </div>
+      <div class="field">
+        <label class="label" for="risk-signal">预警信号</label>
+        <textarea class="textarea textarea--prose" id="risk-signal" rows="3" aria-describedby="risk-signal-hint risk-signal-err"></textarea>
+        <span class="hint" id="risk-signal-hint">出现什么迹象，说明这条风险正在发生或机会正在出现。</span>
+        <span class="error-text" id="risk-signal-err" hidden><svg class="icon icon--sm" aria-hidden="true"><use href="#i-exclamation-circle"/></svg><span></span></span>
+      </div>
+      <div class="form-grid form-grid--2">
+        <div class="field">
+          <label class="label" for="risk-p">默认概率 P</label>
+          <select class="select" id="risk-p"></select>
+        </div>
+        <div class="field">
+          <label class="label" for="risk-i">默认影响 I</label>
+          <select class="select" id="risk-i"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="risk-strategy">应对策略</label>
+        <select class="select" id="risk-strategy" aria-describedby="risk-strategy-hint"></select>
+        <span class="hint" id="risk-strategy-hint"></span>
+      </div>
+      <div class="field">
+        <label class="label" for="risk-response">应对措施</label>
+        <textarea class="textarea textarea--prose" id="risk-response" rows="3" aria-describedby="risk-response-err"></textarea>
+        <span class="error-text" id="risk-response-err" hidden><svg class="icon icon--sm" aria-hidden="true"><use href="#i-exclamation-circle"/></svg><span></span></span>
+      </div>
+      <div class="dialog__footer">
+        <button class="btn btn--secondary" type="button" data-close>取消</button>
+        <button class="btn btn--primary" type="submit" id="risk-submit">添加风险</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- 公共脚本（勿改写法） -->
+<script src="../../design/shared.js"></script>
+<!-- 应用自己的文件 -->
+<script src="data.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

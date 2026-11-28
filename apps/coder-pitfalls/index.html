@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="coder-pitfalls">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>程序员避坑指南 — 每条坑都有根因和改法 | 折向东 · 工具箱</title>
+<meta name="description" content="整理 Java、Spring、Redis、MySQL、AI 编程与工程实践中的常见坑，每条讲清现象、根因、正确做法和一句话原则，可按主题、难度检索。">
+<meta name="author" content="折向东">
+<meta name="robots" content="index,follow">
+<!--@favicon-->
+
+<!-- 公共资源引用（勿改写法） -->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<!-- 应用自己的文件 -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- 图标与标志 sprite（构建时内联到页面顶部，必须放在 body 第一个元素） -->
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="./" aria-label="程序员避坑指南，折向东 · 工具箱">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-coder-pitfalls"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">程序员避坑指南</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="功能导航">
+      <div class="nav__group">
+        <div class="nav__label">指南</div>
+        <button class="nav__item" type="button" data-view="start" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg>
+          <span class="nav__item-text">开始</span>
+        </button>
+        <button class="nav__item" type="button" data-view="entries">
+          <svg class="icon" aria-hidden="true"><use href="#i-queue-list"/></svg>
+          <span class="nav__item-text">全部条目</span>
+          <span class="nav__count" id="nav-count">0</span>
+        </button>
+        <button class="nav__item" type="button" data-view="about">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <span class="nav__item-text">关于本指南</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+      <span>v2.0 · 阅读进度只保存在本机</span>
+    </div>
+  </aside>
+
+  <!-- ================= 主区域 ================= -->
+  <div class="app__main">
+    <header class="topbar">
+      <span class="topbar__title" id="view-title" aria-live="polite">开始</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions">
+        <span class="cp-read-meta" id="read-meta" hidden>已读 <span class="num" id="read-meta-read">0</span> / <span class="num" id="read-meta-total">0</span></span>
+        <button class="btn btn--secondary" type="button" id="topbar-search" hidden>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+          搜索条目
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+      <noscript><div class="callout callout--warning"><svg class="icon" aria-hidden="true"><use href="#i-exclamation-triangle"/></svg><div class="callout__body"><div class="callout__title">需要开启 JavaScript</div>这个工具的检索和阅读功能都在浏览器里运行，开启 JavaScript 后刷新页面即可。</div></div></noscript>
+
+      <!-- ========== 视图：开始 ========== -->
+      <section class="view cp-start" data-view-panel="start" aria-labelledby="start-title">
+        <div class="section-head">
+          <div>
+            <h1 id="start-title">遇到问题，先查这里有没有人摔过</h1>
+            <p class="cp-start__lead">按主题或关键词找到对应的坑，一分钟看懂会怎么出事、为什么、该怎么改。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__body cp-progress">
+            <div class="cp-progress__head">
+              <div class="stack stack--2">
+                <span class="label" id="progress-label">阅读进度</span>
+                <span class="cp-progress__numbers">已读 <span class="num strong" id="progress-read">0</span> / 共 <span class="num" id="progress-total">0</span> 条</span>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn--secondary" type="button" data-open-entries>
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-queue-list"/></svg>
+                  浏览全部条目
+                </button>
+                <button class="btn btn--primary" type="button" id="btn-random">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-path"/></svg>
+                  随机来一条
+                </button>
+              </div>
+            </div>
+            <div class="progress" id="progress-bar" role="progressbar" aria-labelledby="progress-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="progress__bar" id="progress-bar-fill"></div>
+            </div>
+            <p class="cp-hint" id="progress-hint">打开一条未读条目并停留约 5 秒，会自动标为已读。进度只保存在这台设备的浏览器里。</p>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>按主题进入</h2>
+          <span class="section-head__meta">共 <span class="num">7</span> 个主题</span>
+        </div>
+        <div class="cp-topics" id="topics"></div>
+
+        <div class="cp-shortcuts cp-shortcuts--start" aria-label="键盘快捷键">
+          <span class="cp-shortcuts__label">快捷键</span>
+          <span class="cp-shortcut"><span class="kbd">/</span>搜索</span>
+          <span class="cp-shortcut"><span class="kbd">↑</span><span class="kbd">↓</span>切换条目</span>
+          <span class="cp-shortcut"><span class="kbd">Esc</span>退出搜索</span>
+        </div>
+      </section>
+
+      <!-- ========== 视图：全部条目（左列表 + 右阅读区） ========== -->
+      <section class="view cp-split" data-view-panel="entries" hidden>
+        <aside class="cp-split__list" aria-label="筛选与条目列表">
+          <div class="cp-filters">
+            <div class="search">
+              <svg class="icon" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+              <input class="input" type="search" id="entry-search" aria-label="搜索条目" placeholder="搜索标题、标签或正文" autocomplete="off" enterkeyhint="search">
+            </div>
+            <div class="chip-row cp-filters__topics" role="group" aria-label="按主题筛选" id="category-chips"></div>
+            <div class="cp-filters__row">
+              <span class="cp-filters__label" aria-hidden="true">难度</span>
+              <div class="chip-row" role="group" aria-label="按难度筛选" id="difficulty-chips"></div>
+            </div>
+            <div class="cp-filters__row">
+              <span class="cp-filters__label" aria-hidden="true">状态</span>
+              <div class="chip-row" role="group" aria-label="按阅读状态筛选" id="status-chips"></div>
+            </div>
+          </div>
+
+          <div class="cp-listbar">
+            <span class="small cp-dim" id="result-count" aria-live="polite"></span>
+            <button class="btn btn--ghost btn--sm" type="button" id="clear-filters" hidden>清除筛选</button>
+          </div>
+
+          <div class="cp-list-scroll" id="list-scroll" role="region" aria-label="条目列表" tabindex="0">
+            <ul class="cp-entry-list" id="entry-list"></ul>
+            <div class="empty" id="list-empty" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-magnifying-glass"/></svg>
+              <div class="empty__title" id="list-empty-title">没有找到</div>
+              <p class="empty__text" id="list-empty-text"></p>
+              <div class="empty__actions">
+                <button class="btn btn--secondary" type="button" data-clear-filters>清除筛选</button>
+              </div>
+            </div>
+            <p class="cp-list-end small cp-dim" id="list-end"></p>
+          </div>
+
+          <div class="cp-shortcuts" aria-label="键盘快捷键">
+            <span class="cp-shortcuts__label">快捷键</span>
+            <span class="cp-shortcut"><span class="kbd">/</span>搜索</span>
+            <span class="cp-shortcut"><span class="kbd">↑</span><span class="kbd">↓</span>切换条目</span>
+            <span class="cp-shortcut"><span class="kbd">Esc</span>退出搜索</span>
+          </div>
+        </aside>
+
+        <article class="cp-split__detail" aria-label="阅读区">
+          <div class="cp-reader__toolbar">
+            <button class="btn btn--secondary btn--sm cp-reader__back" type="button" id="back-to-list">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>
+              返回列表
+            </button>
+            <span class="small cp-dim cp-reader__pos" id="reader-pos"></span>
+            <span class="grow"></span>
+            <div class="btn-group">
+              <button class="btn btn--secondary btn--sm" type="button" id="toggle-read" aria-label="标记为已读">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-check"/></svg>
+                <span class="cp-btn-text" id="toggle-read-text">标记为已读</span>
+              </button>
+              <button class="btn btn--secondary btn--sm" type="button" id="copy-points" aria-label="复制要点">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-clipboard-document"/></svg>
+                <span class="cp-btn-text">复制要点</span>
+              </button>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn--secondary btn--sm cp-iconbtn" type="button" id="prev-entry" aria-label="上一条">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-up"/></svg>
+              </button>
+              <button class="btn btn--secondary btn--sm cp-iconbtn" type="button" id="next-entry" aria-label="下一条">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cp-reader__scroll" id="reader-scroll" role="region" aria-label="条目正文" tabindex="0">
+            <div class="empty cp-reader__blank" id="reader-blank">
+              <svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg>
+              <div class="empty__title" id="reader-blank-title">没有可显示的条目</div>
+              <p class="empty__text" id="reader-blank-text">在列表里选一条，内容会显示在这里。</p>
+              <div class="empty__actions">
+                <button class="btn btn--secondary" type="button" data-clear-filters hidden>清除筛选</button>
+              </div>
+            </div>
+
+            <article class="cp-reader" id="reader" hidden>
+              <div class="cp-reader__meta" id="reader-meta"></div>
+              <h1 class="cp-reader__title" id="reader-title" tabindex="-1"></h1>
+
+              <dl class="cp-facts">
+                <div class="cp-fact"><dt>什么时候遇到</dt><dd id="reader-scenario"></dd></div>
+                <div class="cp-fact"><dt>现象</dt><dd id="reader-symptom"></dd></div>
+                <div class="cp-fact"><dt>根因</dt><dd id="reader-cause"></dd></div>
+              </dl>
+
+              <section class="cp-sec" aria-labelledby="fix-title">
+                <h2 class="cp-sec__title" id="fix-title">正确做法</h2>
+                <ol class="cp-fix" id="reader-fix"></ol>
+              </section>
+
+              <section class="cp-sec" aria-labelledby="example-title" id="example-sec">
+                <h2 class="cp-sec__title" id="example-title">反例 / 正例</h2>
+                <div class="stack stack--3" id="reader-examples"></div>
+              </section>
+
+              <section class="cp-principle" aria-labelledby="principle-title">
+                <h2 class="cp-principle__title" id="principle-title">一句话原则</h2>
+                <p class="cp-principle__text" id="reader-principle"></p>
+              </section>
+
+              <section class="cp-sec" aria-labelledby="related-title">
+                <h2 class="cp-sec__title" id="related-title">相关条目</h2>
+                <ul class="cp-related" id="reader-related"></ul>
+                <p class="cp-hint" id="related-hint" hidden>带“相似”标记的，是按共同标签自动找到的，不是人工标注的。</p>
+              </section>
+            </article>
+          </div>
+          <span class="sr-only" role="status" aria-live="polite" id="reader-status"></span>
+        </article>
+      </section>
+
+      <!-- ========== 视图：关于本指南 ========== -->
+      <section class="view cp-about" data-view-panel="about" hidden aria-labelledby="about-title">
+        <h1 id="about-title">关于本指南</h1>
+
+        <section class="card" aria-labelledby="about-source-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-source-heading"><svg class="icon" aria-hidden="true"><use href="#i-document-text"/></svg>内容来源</h2>
+          </div>
+          <div class="card__body">
+            <p class="cp-about__source">本指南由折向东整理，内容来自公开的技术文档、社区讨论和常见的工程实践总结，并做了统一的结构化处理。技术结论与具体的软件版本、业务场景有关，使用前请结合自己的环境判断。</p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="about-structure-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-structure-heading"><svg class="icon" aria-hidden="true"><use href="#i-list-bullet"/></svg>每条是怎么写的</h2>
+          </div>
+          <div class="card__body">
+            <dl class="cp-structure">
+              <div class="cp-structure__row"><dt>什么时候遇到</dt><dd>什么情况下会碰上这个坑，方便对号入座。</dd></div>
+              <div class="cp-structure__row"><dt>现象</dt><dd>出事时看到的是什么，帮你确认是不是同一个问题。</dd></div>
+              <div class="cp-structure__row"><dt>根因</dt><dd>为什么会出事。这一段决定你能不能把同样的思路用到别处。</dd></div>
+              <div class="cp-structure__row"><dt>正确做法</dt><dd>分条写清该怎么改。技术类条目附“反例 / 正例”两段代码，并用注释标出关键的那一行。</dd></div>
+              <div class="cp-structure__row"><dt>一句话原则</dt><dd>记不住细节时，记住这一句。</dd></div>
+            </dl>
+            <p class="cp-hint cp-about__note">代码示例为了简短省略了包名、导入和部分异常声明，重在说明写法，直接复制不一定能编译。</p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="about-level-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-level-heading"><svg class="icon" aria-hidden="true"><use href="#i-scale"/></svg>难度是怎么标的</h2>
+          </div>
+          <div class="card__body">
+            <dl class="cp-structure">
+              <div class="cp-structure__row"><dt><span class="badge badge--outline">入门</span></dt><dd>知道规则就能避开的坑。</dd></div>
+              <div class="cp-structure__row"><dt><span class="badge badge--outline">进阶</span></dt><dd>需要理解机制才能判断的坑。</dd></div>
+              <div class="cp-structure__row"><dt><span class="badge badge--outline">资深</span></dt><dd>涉及取舍、架构或长期维护的坑。</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="about-progress-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-progress-heading"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg>阅读进度</h2>
+          </div>
+          <div class="card__body">
+            <p>已读标记只保存在这台设备的浏览器里，不会上传。打开一条未读条目并停留约 <span class="num">5</span> 秒会自动标为已读，也可以在阅读区手动改回未读。清除浏览数据、换浏览器或用隐私模式打开，进度都不会保留。</p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="about-log-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-log-heading"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>版本记录</h2>
+          </div>
+          <div class="card__body card__body--flush">
+            <table class="table cp-about__log">
+              <thead><tr><th scope="col">版本</th><th scope="col">日期</th><th scope="col">改动</th></tr></thead>
+              <tbody>
+                <tr><td class="num">v2.0</td><td class="num">2026-11-28</td><td>重建结构，全部条目补充根因、正确做法与代码示例，新增工程实践类条目</td></tr>
+                <tr><td class="num">v1.0</td><td class="num">2026-11-27</td><td>初版</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="about-feedback-heading">
+          <div class="card__header">
+            <h2 class="card__title" id="about-feedback-heading"><svg class="icon" aria-hidden="true"><use href="#i-megaphone"/></svg>反馈</h2>
+          </div>
+          <div class="card__body cp-about__feedback">
+            <p>发现说法不对、和你所在版本的表现不一致，或者想补充新的坑，欢迎到知乎找作者。</p>
+            <a class="btn btn--secondary" href="https://www.zhihu.com/people/xdong-she" target="_blank" rel="noopener noreferrer">
+              在知乎找到作者
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-top-right-on-square"/></svg>
+              <span class="sr-only">（在新标签页打开）</span>
+            </a>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- 公共脚本（勿改写法） -->
+<script src="../../design/shared.js"></script>
+<!-- 应用自己的文件：先数据，再纯逻辑，最后界面 -->
+<script src="data.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,740 @@
+/* ============================================================================
+   程序员避坑指南 · 应用样式
+   约定：只用 design/tokens.css 里的变量，派生色用 color-mix，不写死色值。
+   本应用的类名一律带 cp- 前缀，避免和公共组件重名。
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. 全局
+   -------------------------------------------------------------------------- */
+.app {
+  /* 数字一律等宽。base.css 在 body 上把 tnum 关掉并会被后代继承，
+     这里两级一起写，保证等宽在本应用里一定生效。 */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+
+  /* 压在“强调色浅底”上的强调色文字。浅色主题下直接用 --accent 只有 4.08:1，
+     换成深一档的 --accent-active 是 5.92:1；深色主题下 --accent 自己就有 4.78:1，不变。 */
+  --cp-accent-on-tint: var(--accent-active);
+}
+[data-theme="dark"] .app {
+  --cp-accent-on-tint: var(--accent);
+}
+
+/* 公共组件里用 text-3（3.65:1）的辅助文字，在本应用里提到 text-2（≥ 6.4:1） */
+.app .empty__text,
+.app .section-head__meta {
+  color: var(--text-2);
+}
+
+/* 视图用 hidden 切换；本文件和公共组件都给不少元素设了 display，
+   作者样式会盖掉浏览器对 hidden 的默认处理，这里统一兜住 */
+.app [hidden] {
+  display: none !important;
+}
+
+/* 次要文字：text-3 的对比度只有 3.65:1，正文里不用它 */
+.cp-dim {
+  color: var(--text-2);
+}
+.cp-hint {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-2);
+}
+
+.cp-read-meta {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  white-space: nowrap;
+  padding: 0 var(--sp-1);
+}
+
+/* --------------------------------------------------------------------------
+   1. 开始视图
+   -------------------------------------------------------------------------- */
+.cp-start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.cp-start__lead {
+  margin-top: var(--sp-1);
+  max-width: 48ch;
+  font-size: var(--fs-md);
+  color: var(--text-2);
+}
+
+/* 阅读进度 */
+.cp-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cp-progress__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.cp-progress__numbers {
+  font-size: var(--fs-base);
+  color: var(--text-2);
+}
+.cp-progress__value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+  margin: 0 2px;
+}
+
+/* 主题入口卡片 */
+.cp-topics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+.cp-topic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 136px;
+  padding: var(--sp-4);
+  text-align: left;
+  color: var(--text-1);
+  font-size: var(--fs-base);
+}
+.cp-topic__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.cp-topic__name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  min-width: 0;
+}
+.cp-topic__desc {
+  flex: 1;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: var(--text-2);
+}
+.cp-topic__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.cp-topic__foot .icon {
+  color: var(--success);
+}
+/* “全部条目”不是主题，做成下沉的一块，和七个主题区分开 */
+.cp-topic--all {
+  background: var(--surface-sunken);
+}
+.cp-topic--all.card--interactive:hover {
+  background: var(--surface-raised);
+}
+
+/* --------------------------------------------------------------------------
+   2. 全部条目：左列表 + 右阅读区
+   -------------------------------------------------------------------------- */
+.cp-split {
+  display: grid;
+  grid-template-columns: clamp(256px, 27vw, 340px) minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: stretch;
+  width: 100%;
+  max-width: 1280px; /* 很宽的屏幕上两栏居中，列表不被甩到最左边 */
+  margin: 0 auto;
+  min-height: 0;
+}
+.cp-split__list,
+.cp-split__detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+/* 宽屏：两个面板各自滚动，页面本身不滚动 */
+@media (min-width: 961px) {
+  .content--wide {
+    max-width: none;
+  }
+  .content--wide .cp-split:not([hidden]) {
+    height: calc(100dvh - var(--topbar-h) - var(--sp-6) * 2);
+    min-height: 480px;
+  }
+}
+
+/* ---------- 2.1 左栏：筛选 ---------- */
+.cp-filters {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.cp-filters__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.cp-filters__row .chip-row {
+  flex: 1;
+  min-width: 0;
+}
+.cp-filters__label {
+  flex: none;
+  width: 2.75em;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  line-height: 32px; /* 和胶囊的高度对齐 */
+  color: var(--text-2);
+}
+.cp-chip__count {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+/* 选中的胶囊是强调色文字压在强调色浅底上，公共样式里的对比度不够 4.5:1，这里换深一档 */
+.cp-filters .chip[aria-pressed="true"] {
+  color: var(--cp-accent-on-tint);
+}
+.cp-filters .chip[aria-pressed="true"] .cp-chip__count {
+  color: inherit;
+}
+
+/* ---------- 2.2 左栏：列表 ---------- */
+.cp-listbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: var(--sp-1) var(--sp-3);
+}
+.cp-list-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-1) var(--sp-2) var(--sp-3);
+}
+.cp-entry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cp-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  grid-template-rows: auto auto;
+  column-gap: var(--sp-2);
+  row-gap: 2px;
+  width: 100%;
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  text-align: left;
+  color: var(--text-1);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.cp-entry__title {
+  grid-column: 1;
+  align-self: end;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+.cp-entry__meta {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.cp-entry__mark {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--text-2);
+}
+.cp-entry__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+/* 已读：标题不再加粗、颜色退一级、右侧换成对勾（不只靠颜色区分） */
+.cp-entry--read .cp-entry__title {
+  font-weight: 400;
+  color: var(--text-2);
+}
+/* 当前条目：底色 + 左侧一条竖线 */
+.cp-entry[aria-current="page"] {
+  background: var(--accent-tint);
+}
+.cp-entry[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.cp-entry:hover {
+  background: var(--surface-hover);
+}
+.cp-entry[aria-current="page"]:hover,
+.cp-entry:active {
+  background: var(--accent-tint-strong);
+}
+.cp-list-end {
+  padding: var(--sp-3) var(--sp-2) var(--sp-1);
+  text-align: center;
+}
+
+/* 快捷键提示 */
+.cp-shortcuts {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.cp-shortcuts__label {
+  font-weight: 500;
+}
+.cp-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* 开始视图里同一组提示：不画分隔线 */
+.cp-shortcuts--start {
+  border-top: 0;
+  padding: 0;
+}
+
+/* ---------- 2.3 右栏：阅读区 ---------- */
+.cp-reader__toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.cp-reader__back {
+  display: none; /* 宽屏两栏都在，不需要返回 */
+}
+.cp-reader__pos {
+  white-space: nowrap;
+}
+.cp-iconbtn {
+  width: 32px;
+  padding: 0;
+}
+
+.cp-reader__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cp-reader__blank {
+  min-height: 320px;
+}
+.cp-reader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-6) var(--sp-10);
+}
+.cp-reader__title {
+  font-size: var(--fs-2xl);
+  overflow-wrap: anywhere;
+}
+.cp-reader__title:focus {
+  outline: none; /* 程序化聚焦的落点，用来让读屏软件播报标题 */
+}
+.cp-reader__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.cp-reader__tags {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+/* 标题下面三段：标签在左、内容在右，一眼分得清哪段是什么 */
+.cp-facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cp-fact {
+  display: grid;
+  grid-template-columns: 6.5em minmax(0, 1fr);
+  gap: var(--sp-4);
+}
+.cp-fact dt {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: calc(var(--fs-md) * var(--lh-body)); /* 和右侧正文的首行对齐 */
+  color: var(--text-2);
+}
+.cp-fact dd {
+  min-width: 0;
+  font-size: var(--fs-md);
+}
+
+.cp-sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--border);
+}
+.cp-sec__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+
+/* 正确做法：编号列表 */
+.cp-fix {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: cp-fix;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cp-fix li {
+  position: relative;
+  padding-left: 32px;
+  font-size: var(--fs-md);
+  counter-increment: cp-fix;
+}
+.cp-fix li::before {
+  content: counter(cp-fix);
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 20px;
+  color: var(--accent); /* 直接压在面板色上，浅色 5.2:1、深色更高 */
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* 反例 / 正例：在 .code-block 里按行渲染，标出关键的那一行 */
+.cp-code-block .code-block__header {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.cp-code {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  white-space: pre;
+  tab-size: 2;
+}
+.cp-code__line {
+  display: block;
+  min-height: 1.7em;
+  margin: 0 calc(-1 * var(--sp-2));
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-xs);
+}
+.cp-code__line.is-key {
+  background: color-mix(in oklch, var(--accent) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.cp-code .is-comment {
+  color: var(--text-2);
+}
+.cp-code .is-string {
+  color: var(--info);
+}
+
+/* 一句话原则：左侧一条强调色竖线 */
+.cp-principle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-lg);
+}
+.cp-principle__title {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--cp-accent-on-tint);
+}
+.cp-principle__text {
+  font-size: var(--fs-lg);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+}
+
+/* 相关条目 */
+.cp-related {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sp-2);
+}
+.cp-related__link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  text-align: left;
+  color: var(--text-1);
+  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.cp-related__link:hover {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+.cp-related__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cp-related__title {
+  font-size: var(--fs-base);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+}
+.cp-related__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.cp-related__link .icon {
+  color: var(--text-2);
+}
+
+/* --------------------------------------------------------------------------
+   3. 关于本指南
+   -------------------------------------------------------------------------- */
+.cp-about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.cp-about > h1 {
+  margin-bottom: var(--sp-2);
+}
+.cp-about__source {
+  font-size: var(--fs-md);
+}
+.cp-about__note {
+  margin-top: var(--sp-4);
+}
+.cp-structure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cp-structure__row {
+  display: grid;
+  grid-template-columns: 7em minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: baseline;
+}
+.cp-structure dt {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+}
+.cp-structure dd {
+  font-size: var(--fs-base);
+}
+.cp-about__log th:first-child,
+.cp-about__log td:first-child {
+  width: 5em;
+}
+.cp-about__log th:nth-child(2),
+.cp-about__log td:nth-child(2) {
+  width: 8.5em;
+  white-space: nowrap;
+}
+.cp-about__feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------------------
+   4. 窄屏（< 960px）：先列表，点开后进入详情
+   -------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  /* 触控目标补到 44px（公共样式里这几项在窄屏下不足） */
+  .nav__item {
+    min-height: var(--control-h-lg);
+  }
+  .cp-filters .chip {
+    min-height: var(--control-h-lg);
+  }
+  .cp-filters__label {
+    line-height: var(--control-h-lg);
+  }
+  .cp-iconbtn {
+    width: var(--control-h-lg);
+  }
+  /* 阅读区工具条上的按钮是本应用自己摆的，窄屏下高度也补到 44px */
+  .cp-reader__toolbar .btn {
+    min-height: var(--control-h-lg);
+  }
+
+  .cp-split {
+    display: block;
+  }
+  .cp-split__detail {
+    display: none;
+    overflow: visible;
+  }
+  .cp-split.is-detail-open .cp-split__list {
+    display: none;
+  }
+  .cp-split.is-detail-open .cp-split__detail {
+    display: flex;
+  }
+
+  /* 窄屏下页面整体滚动：工具条吸顶，列表和正文跟着页面走 */
+  .cp-list-scroll,
+  .cp-reader__scroll {
+    overflow: visible;
+    flex: none;
+  }
+  .cp-reader__toolbar {
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 10;
+    background: var(--surface-raised);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+  }
+  .cp-reader__back {
+    display: inline-flex;
+  }
+  .cp-reader {
+    padding: var(--sp-5) var(--sp-4) var(--sp-8);
+  }
+  .cp-reader__blank {
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
+  }
+
+  /* 没有实体键盘的地方不摆快捷键提示 */
+  .cp-shortcuts {
+    display: none;
+  }
+}
+
+@media (hover: none) {
+  .cp-shortcuts {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 工具条放不下完整文字：两个操作按钮变成纯图标（aria-label 保留完整名称） */
+  .cp-reader__toolbar .cp-btn-text {
+    display: none;
+  }
+  .cp-reader__toolbar .btn--sm:not(.cp-reader__back) {
+    width: var(--control-h-lg);
+    padding: 0;
+  }
+  .cp-reader__pos {
+    display: none;
+  }
+  .cp-topics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 阅读区比较窄时（窄屏，或窗口刚好压到两栏的下限），标签和内容改成上下排 */
+@container cp-reader (max-width: 520px) {
+  .cp-fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-1);
+  }
+  .cp-fact dt {
+    line-height: var(--lh-snug);
+  }
+  .cp-related {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 把阅读区设成容器，上面的 @container 才有参照 */
+.cp-split__detail {
+  container-type: inline-size;
+  container-name: cp-reader;
+}

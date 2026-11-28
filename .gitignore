@@ -1,0 +1,11 @@
+node_modules/
+.netlify
+.DS_Store
+Thumbs.db
+*.log
+.env*
+build/sites/
+build/zip/
+design/_vendor/package/
+design/_vendor/*.tgz
+design/research/
