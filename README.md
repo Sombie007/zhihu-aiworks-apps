@@ -1,6 +1,6 @@
 # 折向东 · 工具箱
 
-四个在浏览器里直接运行的小工具。不需要登录，不向服务器发送任何数据。
+五个在浏览器里直接运行的小工具。不需要登录，不向服务器发送任何数据。
 
 | 工具 | 用途 | 在线使用 |
 |---|---|---|
@@ -8,6 +8,7 @@
 | 数字化成熟度自评 | 对照四个维度二十道题，判断企业数字化所处等级，列出短板和行动建议 | [打开](https://euphonious-capybara-1038b2.netlify.app/) |
 | PMP 助手 | 考试大纲速查、挣值计算器、风险登记册、考点速记卡 | [打开](https://jovial-stardust-dc4e72.netlify.app/) |
 | 程序员避坑指南 | Java、Spring、Redis、MySQL、AI 编程与工程实践中的常见坑，按主题检索 | [打开](https://comforting-gelato-8e73f3.netlify.app/) |
+| AI Agent 落地评估自测 | 六个维度三十道题，判断企业现在适不适合上 AI Agent、卡在哪一环，报告可导出 | [打开](https://dreamy-lokum-6632ea.netlify.app/) |
 
 ## 本地运行
 
@@ -60,4 +61,4 @@ build/                 构建与生成脚本
 
 ## 说明
 
-「PMP 助手」和「数字化成熟度自评」是非官方的辅助资料，内容依据公开的考试大纲和评测指标整理并注明了出处，以相关机构发布的最新信息为准。PMP、PMBOK 是 Project Management Institute, Inc. 的商标。
+「PMP 助手」「数字化成熟度自评」和「AI Agent 落地评估自测」是非官方的辅助与自评工具，题目、评分规则和分级由本工具自行设计，内容依据公开的考试大纲和评测指标整理并注明了出处，以相关机构发布的最新信息为准。PMP、PMBOK 是 Project Management Institute, Inc. 的商标。
