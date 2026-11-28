@@ -1,0 +1,889 @@
+/* ============================================================================
+   AI Agent 落地评估自测 · 应用样式
+   只写本应用特有的部分。颜色一律引用 design/tokens.css 的变量，派生色用 color-mix。
+   对设计系统的补充（组件库里没有、本应用需要的）：
+     html[data-app=…] 强调色覆盖   酒红不在 tokens.css 里，按 data-app 在这里覆盖
+     [hidden]                      组件库给 .btn 等设了 display，会盖掉 hidden 属性，统一兜底
+     .nav__item[aria-disabled]     导航项“暂不可用”的状态（未答完时的评估报告）
+     .scale                        本应用的 1–5 打分量表（横向单选，触控目标 ≥ 44px）
+     .scale-legend                 量表含义列表（开始页与方法说明共用）
+     .grade-bar                    五档档位指示条（报告页）
+     .table--text                  以文字为主的表格：字号回到正文 14px
+   ========================================================================== */
+
+/* ---------- 强调色：酒红（浅色 #9d3b5c / 深色 #e08aa5），与其他工具区分 ---------- */
+html[data-app="ai-agent-readiness"] { --accent: #9d3b5c; }
+html[data-app="ai-agent-readiness"][data-theme="dark"] { --accent: #e08aa5; }
+
+/* hidden 属性必须永远生效（视图切换、工具栏按钮显隐都靠它） */
+[hidden] { display: none !important; }
+
+/* ---------- 导航项：暂不可用（例如还没答完时的评估报告） ---------- */
+.nav__item[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  color: var(--text-2);
+}
+.nav__item[aria-disabled="true"]:hover,
+.nav__item[aria-disabled="true"]:active {
+  background: transparent;
+  color: var(--text-2);
+}
+
+/* ---------- 视图 ---------- */
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+/* ---------- 通用：1–5 的色阶（逐题得分格、图例共用） ---------- */
+.shade-1 { background: color-mix(in oklch, var(--accent) 14%, var(--surface-raised)); }
+.shade-2 { background: color-mix(in oklch, var(--accent) 32%, var(--surface-raised)); }
+.shade-3 { background: color-mix(in oklch, var(--accent) 52%, var(--surface-raised)); }
+.shade-4 { background: color-mix(in oklch, var(--accent) 76%, var(--surface-raised)); }
+.shade-5 { background: var(--accent); }
+
+/* ---------- 开始评估 ---------- */
+.start__lede {
+  margin-top: var(--sp-1);
+  max-width: 56ch;
+}
+.start__stats {
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+.step__no {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.step__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 3px;
+}
+.step__title { font-weight: 600; }
+.step__text { color: var(--text-2); }
+
+.dim-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dim-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 18px;
+  border-top: 1px solid var(--border);
+}
+.dim-list__item:first-child { border-top: 0; }
+.dim-list__no {
+  flex: none;
+  width: 1.4em;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.dim-list__name { flex: none; font-weight: 600; }
+.dim-list__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-2);
+}
+.dim-list__count {
+  flex: none;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+.start__cta {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-2) 0 var(--sp-1);
+}
+
+/* 上次的作答：继续 / 查看 / 重新评估 */
+.resume { border-left: 3px solid var(--accent); }
+.resume__body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.resume__icon { color: var(--accent); flex: none; }
+.resume__text {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.resume__title { font-weight: 600; }
+.resume__meta { color: var(--text-2); }
+.resume__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* 量表含义（开始页、方法说明共用） */
+.scale-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.scale-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 18px;
+  border-top: 1px solid var(--border);
+}
+.scale-legend__item:first-child { border-top: 0; }
+.scale-legend__no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  background: var(--surface-sunken);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.scale-legend__label { min-width: 0; color: var(--text-1); }
+/* 成句的提示（非官方说明、复测提示）：组件库的 .callout 默认 13px，完整句子按“正文不小于 14px”提到 14px */
+.callout--text { font-size: var(--fs-base); }
+
+/* ---------- 评估问卷 ---------- */
+.survey__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-top: var(--sp-2);
+}
+.survey__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.dim-panel__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0 var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+.dim-panel__kicker {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-3);
+}
+.dim-panel__title {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+}
+.dim-panel__summary {
+  color: var(--text-2);
+  max-width: 68ch;
+}
+
+/* 一道题：题干 + 1–5 分量表 + 所选含义 */
+.q {
+  padding: var(--sp-5) 0;
+  border-bottom: 1px solid var(--border);
+}
+.q:last-child {
+  padding-bottom: var(--sp-3);
+  border-bottom: 0;
+}
+.q__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+.q__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+}
+.q__no {
+  flex: none;
+  padding-top: 1px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.q__state { flex: none; white-space: nowrap; }
+
+/* 1–5 打分量表：横向单选，一行五档，触控目标 ≥ 44px */
+.scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.scale__opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--control-h-lg);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
+}
+.scale__opt:hover { border-color: var(--accent); background: var(--surface-hover); }
+.scale__opt:active { transform: scale(0.98); }
+.scale__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.scale__num {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.scale__label {
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  color: var(--text-2);
+  text-align: center;
+}
+.scale__opt:has(.scale__input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-tint-strong);
+}
+.scale__opt:has(.scale__input:checked) .scale__num { color: var(--accent); }
+.scale__opt:has(.scale__input:checked) .scale__label { color: var(--text-1); }
+.scale__opt:has(.scale__input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+/* 选中后的含义提示，跟在量表下面 */
+.q__pick {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.q__pick .strong { color: var(--accent); font-weight: 600; }
+
+/* 维度切换的分段控件里带上“已答 / 题数” */
+.dim-tabs__count {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.segmented__btn[aria-pressed="true"] .dim-tabs__count { color: var(--text-2); }
+
+/* ---------- 报告 ---------- */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-6);
+  margin: 0;
+}
+.meta__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.meta dt {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+.meta dd {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.sec__title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.sec__no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+/* 综合结论：总分大号数字 + 五档档位条 + 一句话诊断 + 建议动作 */
+.verdict__body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-5) var(--sp-8);
+}
+.verdict__level {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.verdict__label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.verdict__figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  color: var(--accent);
+  line-height: 1;
+}
+.verdict__num {
+  font-size: 72px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.verdict__unit {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.verdict__grade {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* 五档档位条：当前档实底高亮，已达档淡底，未达档空描边。不靠颜色区分：当前档字重更重 */
+.grade-bar {
+  display: flex;
+  gap: var(--sp-3);
+}
+.grade-bar__cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.grade-bar__bar {
+  display: block;
+  width: 100%;
+  max-width: 64px;
+  height: 14px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-full);
+  background: transparent;
+}
+.grade-bar__cell--past .grade-bar__bar {
+  background: var(--accent-border);
+  border-color: transparent;
+}
+.grade-bar__cell--past .grade-bar__name { color: var(--text-2); }
+.grade-bar__cell--current .grade-bar__bar {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.grade-bar__cell--current .grade-bar__name {
+  color: var(--accent);
+  font-weight: 600;
+}
+.grade-bar__name {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.verdict__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.verdict__kicker {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.verdict__sentence {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+.verdict__action {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--accent-tint);
+  border-left: 3px solid var(--accent);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+}
+.verdict__action .strong { font-weight: 600; }
+.verdict__next {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.report__charts {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+/* 雷达图 */
+.radar {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.radar text { font-family: var(--font-sans); }
+.radar__grid {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.radar__axis { stroke: var(--border); stroke-width: 1; }
+.radar__tick {
+  fill: var(--text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.radar__label {
+  fill: var(--text-1);
+  font-size: 14px;
+  font-weight: 600;
+}
+.radar__value {
+  fill: var(--text-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.radar__area {
+  fill: var(--accent-tint-strong);
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.radar__dot {
+  fill: var(--accent);
+  stroke: var(--surface-raised);
+  stroke-width: 2;
+}
+.radar__note {
+  text-align: center;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.radar-legend__key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.radar-legend__line {
+  width: 24px;
+  height: 0;
+  border-top: 2px solid var(--accent);
+}
+
+/* 逐题得分：每行一个维度，5 格按分着色，点击可回到那道题 */
+.tiles__row {
+  display: grid;
+  grid-template-columns: 6.2em repeat(5, minmax(0, 1fr));
+  gap: var(--sp-2);
+  align-items: center;
+}
+.tiles__name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: var(--lh-snug);
+  white-space: nowrap;
+}
+.tiles__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  min-height: var(--control-h-lg);
+  padding: 2px;
+  border: 0;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-family: inherit;
+}
+.tiles__cell .num {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.tiles__cell.shade-4 .num,
+.tiles__cell.shade-5 .num { color: var(--on-accent); }
+.tiles__cell:hover { box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--accent); }
+.tiles__cell:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.tiles__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.tiles__legend-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.tiles__legend-swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+.tiles__legend-swatch.shade-5 { border-color: transparent; }
+.tiles__hint {
+  color: var(--text-3);
+}
+
+/* 六个维度卡片：得分条 + 均分 + 短板题建议 */
+.dim-card .card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.dim-card__no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  background: var(--surface-sunken);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.dim-card__summary {
+  margin-top: calc(-1 * var(--sp-2));
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.dim-card__score {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.dim-card__total {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.dim-card__total .muted { font-weight: 400; }
+.dim-card__avg {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.dim-card__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.dim-card__bar .progress { flex: 1; height: 8px; }
+.dim-card__facts {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.dim-card__facts .strong { color: var(--text-1); }
+.dim-card__quiet {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+/* 短板题：题号、所选、建议 */
+.weak {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0 0;
+  border-top: 1px solid var(--border);
+}
+.weak__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.weak__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.weak__no { color: var(--text-3); font-weight: 500; }
+.weak__text { font-weight: 600; line-height: var(--lh-snug); }
+.weak__line {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+}
+.weak__label { flex: none; color: var(--text-3); }
+.weak__label--accent { color: var(--accent); font-weight: 600; }
+.weak__body { min-width: 0; color: var(--text-1); }
+.weak__body--quote { color: var(--text-2); }
+
+/* 报告页脚 */
+.report__foot {
+  display: grid;
+  gap: var(--sp-6);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--border);
+}
+.report__foot-title {
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-md);
+}
+.report__foot .btn { justify-self: start; }
+
+/* ---------- 有序列表（评分规则） ---------- */
+.rules {
+  margin: 0;
+  padding-left: 1.6em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.rules li { padding-left: var(--sp-1); }
+.rules__term { font-weight: 600; }
+.rules em { font-style: normal; font-weight: 600; }
+
+/* ---------- 常见问题 ---------- */
+.faq {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.faq dt {
+  margin-bottom: var(--sp-1);
+  font-weight: 600;
+}
+.faq dd {
+  margin: 0;
+  color: var(--text-2);
+}
+
+/* 浅色主题下，组件库的 .badge--accent（强调色文字压在 11% 淡底上）对本应用的酒红对比不足的小字场景，
+   换成 tokens 里已有的加深一档的强调色（--accent-hover）。深色主题下本来就是亮色，不用动。 */
+:root:not([data-theme="dark"]) .badge--accent { color: var(--accent-hover); }
+
+/* 以文字为主的表格：字号回到正文 */
+.table--text { font-size: var(--fs-base); }
+.table--text th { white-space: normal; }
+.table--text .nowrap { white-space: nowrap; }
+
+/* 方法说明表格里的维度序号（第二行小字） */
+.method-dim-ordinal {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: 400;
+}
+
+/* ---------- 窄屏 ---------- */
+@media (max-width: 720px) {
+  /* 工具栏只留主要操作；“方法说明”从侧栏导航进，报告的两个导出按钮在页脚也有 */
+  .topbar #tb-method { display: none; }
+  .topbar #tb-copy { display: none; }
+  .topbar #tb-png { display: none; }
+  .topbar .btn { padding: 0 var(--sp-3); }
+
+  /* 触控目标补到 44px：组件库在窄屏下只把 .btn 提到了 44px，
+     分段按钮（30px）和下拉框（36px）还是桌面尺寸 */
+  .segmented__btn,
+  .select { min-height: var(--control-h-lg); }
+
+  .verdict__body {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+  .verdict__num { font-size: 56px; }
+  .report__charts { grid-template-columns: 1fr; }
+
+  .survey__foot {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .survey__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));   /* 两个或三个按钮平分一行 */
+  }
+  .survey__nav .btn { white-space: normal; text-align: center; }
+  .survey__foot > .btn { align-self: flex-start; }
+
+  .dim-list__item { flex-wrap: wrap; }
+  .dim-list__text { flex-basis: 100%; padding-left: calc(1.4em + var(--sp-3)); }
+
+  /* 逐题得分表在窄屏下藏起维度名，只留格子（每行上方有维度名的表格标题兜底） */
+  .tiles__row { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .tiles__row .tiles__name { grid-column: 1 / -1; }
+
+  .q__head { flex-direction: column; gap: var(--sp-2); }
+  .q__state { white-space: normal; }
+}
+
+/* 平板与手机宽度下侧栏变成顶部横条，导航项在组件库里是 40px 高，这里补到 44px */
+@media (max-width: 960px) {
+  .nav__item { min-height: var(--control-h-lg); }
+}
+
+/* ---------- 打印：只打报告，占满 A4，卡片不被分页截断 ---------- */
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm;
+}
+
+@media print {
+  .app { display: block; }
+  .app__sidebar,
+  .topbar,
+  .skip-link,
+  .toast-region,
+  dialog,
+  .no-print {
+    display: none !important;
+  }
+  .app__main { background: transparent; }
+
+  .content {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+  .view[hidden] { display: none !important; }
+  .view { gap: var(--sp-5); }
+
+  .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .sec,
+  .report__foot section,
+  tr,
+  li,
+  .weak__item {
+    break-inside: avoid;
+  }
+  .sec { gap: var(--sp-3); }
+  h1,
+  h2,
+  h3,
+  .card__header,
+  .card__title {
+    break-after: avoid;               /* 标题不与后面的内容分到两页 */
+  }
+
+  /* 打印时的版式写死，不跟着屏幕断点走：打印下媒体查询按纸张宽度算，
+     A4 内容宽度正好落进设计系统的窄屏断点（≤ 720px），会把两栏压成一栏 */
+  #report-dims { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .verdict__body {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sp-5) var(--sp-8);
+  }
+  .verdict__num { font-size: 64px; }
+  .report__charts {
+    grid-template-columns: 1fr;
+    gap: var(--sp-4);
+  }
+  .radar { max-width: 300px; }
+
+  /* 屏幕上的底色（得分格、档位条、进度条、徽标、提示框）原样打印出来 */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .tiles__cell { cursor: auto; }
+  a { color: inherit; }
+}

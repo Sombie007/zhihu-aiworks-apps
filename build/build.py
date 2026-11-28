@@ -33,6 +33,7 @@ APPS_MANIFEST = [
     ("digital-maturity", "logo-digital-maturity", "数字化成熟度自评"),
     ("pmp-assistant", "logo-pmp-assistant", "PMP 助手"),
     ("coder-pitfalls", "logo-coder-pitfalls", "程序员避坑指南"),
+    ("ai-agent-readiness", "logo-ai-agent-readiness", "AI Agent 落地评估"),
 ]
 EXTRA_PAGES = [("_styleguide", "logo-toolbox", "设计系统 · 样式指南")]
 

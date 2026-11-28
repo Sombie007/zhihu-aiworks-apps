@@ -12,7 +12,8 @@
     { id: "table-cleaner", name: "表格清洗", url: "https://shimmering-boba-ee233b.netlify.app/", desc: "粘贴或上传表格，去重、补空、规范化，导出干净 CSV" },
     { id: "digital-maturity", name: "数字化成熟度自评", url: "https://euphonious-capybara-1038b2.netlify.app/", desc: "对照四个维度，定位企业数字化所处等级" },
     { id: "pmp-assistant", name: "PMP 助手", url: "https://jovial-stardust-dc4e72.netlify.app/", desc: "考试大纲速查、挣值计算、风险登记册、考点速记" },
-    { id: "coder-pitfalls", name: "程序员避坑指南", url: "https://comforting-gelato-8e73f3.netlify.app/", desc: "企业级项目里真实踩过的坑，按主题检索" }
+    { id: "coder-pitfalls", name: "程序员避坑指南", url: "https://comforting-gelato-8e73f3.netlify.app/", desc: "企业级项目里真实踩过的坑，按主题检索" },
+    { id: "ai-agent-readiness", name: "AI Agent 落地评估", url: "https://dreamy-lokum-6632ea.netlify.app/", desc: "30 道题自测公司适不适合上 AI Agent、卡在哪一环" }
   ];
 
   var MAKER = { name: "折向东", url: "https://www.zhihu.com/people/xdong-she" };

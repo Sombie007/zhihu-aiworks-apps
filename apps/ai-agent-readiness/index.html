@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="ai-agent-readiness">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent 落地评估自测 — 看公司适不适合上 Agent、卡在哪一环 | 折向东 · 工具箱</title>
+<meta name="description" content="对照战略、数据、技术、流程、组织、治理六个维度三十道题，判断企业现在适不适合上 AI Agent、卡在哪一环，给出五档结论和下一步动作。本地计算，不保存数据。">
+<meta name="author" content="折向东">
+<meta name="robots" content="index,follow">
+<!--@favicon-->
+
+<!-- 公共资源引用（勿改写法） -->
+<script src="../../design/theme-init.js"></script>
+<link rel="preconnect" href="https://font.emtech.cc" crossorigin>
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/400">
+<link rel="stylesheet" href="https://font.emtech.cc/css/MiSans/600">
+<link rel="stylesheet" href="../../design/fonts.css">
+<link rel="stylesheet" href="../../design/tokens.css">
+<link rel="stylesheet" href="../../design/base.css">
+<link rel="stylesheet" href="../../design/components.css">
+<!-- 应用自己的文件 -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="num">
+<!-- 图标与标志 sprite（构建时内联到页面顶部，必须放在 body 第一个元素） -->
+<!--@include ../../design/icons.html-->
+<!--@include ../../design/brand/logos.html-->
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<div class="app">
+  <!-- ================= 侧栏 ================= -->
+  <aside class="app__sidebar">
+    <a class="sidebar__brand" href="./" aria-label="AI Agent 落地评估自测，折向东 · 工具箱">
+      <svg class="brand-mark" aria-hidden="true"><use href="#logo-ai-agent-readiness"/></svg>
+      <span class="sidebar__brand-text">
+        <span class="sidebar__brand-name">AI Agent 落地评估自测</span>
+        <span class="sidebar__brand-family">折向东 · 工具箱</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="功能导航">
+      <div class="nav__group">
+        <div class="nav__label">自测</div>
+        <button class="nav__item" type="button" data-view="start" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-flag"/></svg>
+          <span class="nav__item-text">开始评估</span>
+        </button>
+        <button class="nav__item" type="button" data-view="survey">
+          <svg class="icon" aria-hidden="true"><use href="#i-clipboard-document-list"/></svg>
+          <span class="nav__item-text">评估问卷</span>
+          <span class="nav__count num" id="nav-survey-count" hidden>0 / 30</span>
+        </button>
+        <button class="nav__item" type="button" data-view="report" id="nav-report" aria-describedby="nav-report-reason">
+          <svg class="icon" aria-hidden="true"><use href="#i-presentation-chart-line"/></svg>
+          <span class="nav__item-text">评估报告</span>
+          <span class="nav__count num" id="nav-report-count"></span>
+          <span class="sr-only" id="nav-report-reason"></span>
+        </button>
+        <button class="nav__item" type="button" data-view="method">
+          <svg class="icon" aria-hidden="true"><use href="#i-book-open"/></svg>
+          <span class="nav__item-text">方法说明</span>
+        </button>
+      </div>
+      <div class="nav__group">
+        <div class="nav__label">工具箱</div>
+        <div data-toolbox></div>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="row row--between">
+        <a class="sidebar__maker" data-maker href="#"></a>
+        <button class="btn btn--secondary btn--icon" type="button" data-theme-toggle aria-pressed="false" aria-label="切换外观">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+      </div>
+      <span>v1.0 · 评估结果只在本机生成</span>
+    </div>
+  </aside>
+
+  <!-- ================= 主区域 ================= -->
+  <div class="app__main">
+    <header class="topbar">
+      <span class="topbar__title" id="view-title">开始评估</span>
+      <span class="topbar__spacer"></span>
+      <div class="topbar__actions">
+        <button class="btn btn--secondary" type="button" id="tb-method" data-action="go-method">查看方法说明</button>
+        <button class="btn btn--secondary" type="button" id="tb-copy" data-action="copy-summary" hidden>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-clipboard-document-check"/></svg>复制文本摘要
+        </button>
+        <button class="btn btn--secondary" type="button" id="tb-png" data-action="export-png" hidden>
+          <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg>导出报告图片
+        </button>
+        <button class="btn btn--primary" type="button" id="tb-primary" data-action="primary">开始评估</button>
+      </div>
+    </header>
+
+    <main class="content" id="main" tabindex="-1">
+      <!-- 每个视图一个 <section>，用 hidden 属性切换；同一时刻只显示一个 -->
+
+      <!-- ================= 开始评估 ================= -->
+      <section class="view" data-view-panel="start" aria-labelledby="start-title">
+        <div class="section-head">
+          <div>
+            <h1 id="start-title">三十道题，看清公司适不适合上 AI Agent</h1>
+            <p class="muted start__lede">对照战略与价值、数据与知识、技术底座、流程与场景、组织与人才、治理与风险六个维度逐题自评，答完给出总分档位、六维雷达图、每个维度的短板和下一步动作。</p>
+          </div>
+        </div>
+
+        <div class="stat-row start__stats">
+          <div class="stat"><span class="stat__value">6</span><span class="stat__label">个维度</span></div>
+          <div class="stat"><span class="stat__value">30</span><span class="stat__label">道题</span></div>
+          <div class="stat"><span class="stat__value">1–5</span><span class="stat__label">分制</span></div>
+          <div class="stat"><span class="stat__value">10</span><span class="stat__label">分钟左右答完</span></div>
+        </div>
+
+        <!-- 有未完成的作答或已有报告时，这里显示“继续上次评估” -->
+        <div class="card" id="resume-card" hidden></div>
+
+        <div class="grid-2">
+          <section class="card" aria-labelledby="how-title">
+            <div class="card__header"><h2 class="card__title" id="how-title">怎么评</h2></div>
+            <div class="card__body">
+              <ol class="steps">
+                <li class="step">
+                  <span class="step__no" aria-hidden="true">1</span>
+                  <div class="step__body">
+                    <span class="step__title">逐题打分</span>
+                    <span class="step__text">每道题按 1–5 分打分：1 是完全没有，5 是体系化、可复制推广。选最贴近现状的一档，不是期望达到的样子。</span>
+                  </div>
+                </li>
+                <li class="step">
+                  <span class="step__no" aria-hidden="true">2</span>
+                  <div class="step__body">
+                    <span class="step__title">一屏答一个维度</span>
+                    <span class="step__text">一次只出现一个维度的 5 道题，顶部有总进度。最好让 IT、业务、管理层各答一遍，分差大的题拿去讨论。</span>
+                  </div>
+                </li>
+                <li class="step">
+                  <span class="step__no" aria-hidden="true">3</span>
+                  <div class="step__body">
+                    <span class="step__title">查看报告</span>
+                    <span class="step__text">三十道题都答完后生成：总分档位、六维雷达图、每维短板题的建议。可以导出报告图片或复制文本摘要，建议 3 个月后复测对比。</span>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="start-dims-title">
+            <div class="card__header">
+              <h2 class="card__title" id="start-dims-title">六个维度各看什么</h2>
+              <span class="card__meta">共 30 道题</span>
+            </div>
+            <div class="card__body card__body--flush">
+              <ul class="dim-list" id="start-dims"></ul>
+            </div>
+          </section>
+        </div>
+
+        <section class="card" aria-labelledby="scale-title">
+          <div class="card__header">
+            <h2 class="card__title" id="scale-title">1–5 分怎么打</h2>
+            <span class="card__meta">所有题目共用这张量表</span>
+          </div>
+          <div class="card__body card__body--flush">
+            <ul class="scale-legend" id="start-scale"></ul>
+          </div>
+        </section>
+
+        <div class="start__cta">
+          <button class="btn btn--primary btn--lg" type="button" data-action="primary" id="start-cta">开始评估</button>
+        </div>
+
+        <div class="callout callout--info callout--text">
+          <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+          <div class="callout__body">
+            <div class="callout__title">这是非官方的自测</div>
+            维度划分、题目与评分规则由本工具自行设计，结果反映的是作答人对现状的判断，仅供内部讨论和自查，不构成采购、选型或投资的依据。作答只保存在本机浏览器里，不会上传。
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 评估问卷 ================= -->
+      <section class="view" data-view-panel="survey" aria-labelledby="survey-title" hidden>
+        <div class="section-head">
+          <div>
+            <h1 id="survey-title">评估问卷</h1>
+            <p class="muted">一屏一个维度，每道题按 1–5 分打分。选项之间可以用键盘的方向键移动，回车选中。</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card__body stack--3">
+            <div class="row row--between">
+              <span class="small" id="survey-save-state">作答会自动保存在本机</span>
+              <span class="small muted" id="survey-progress-text">已答 0 / 30</span>
+            </div>
+            <div class="progress" id="survey-progress" role="progressbar" aria-label="评估进度" aria-valuemin="0" aria-valuemax="30" aria-valuenow="0" aria-valuetext="已答 0 / 30">
+              <div class="progress__bar" id="survey-progress-bar"></div>
+            </div>
+            <div class="segmented" id="dim-tabs" aria-label="切换要作答的维度"></div>
+          </div>
+        </div>
+
+        <div id="survey-panel"></div>
+
+        <div class="survey__foot">
+          <button class="btn btn--ghost" type="button" data-action="reset" id="survey-reset">重新评估</button>
+          <div class="survey__nav">
+            <button class="btn btn--secondary" type="button" data-action="prev-dim" id="btn-prev">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>上一维度
+            </button>
+            <button class="btn btn--secondary" type="button" data-action="next-dim" id="btn-next-dim" hidden>
+              下一维度<svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+            </button>
+            <button class="btn btn--primary" type="button" data-action="primary" id="btn-next">
+              下一维度<svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 评估报告 ================= -->
+      <section class="view" data-view-panel="report" aria-labelledby="report-title" hidden>
+        <header class="section-head">
+          <div>
+            <h1 id="report-title">评估报告</h1>
+            <p class="muted">结论在前，依据在后：先看总分档位和建议动作，再看六维雷达图、每个维度的短板和逐题得分。</p>
+          </div>
+          <dl class="meta" id="report-meta"></dl>
+        </header>
+
+        <section class="card" id="report-verdict-card" aria-labelledby="verdict-heading">
+          <div class="card__body verdict__body" id="report-verdict"></div>
+        </section>
+
+        <section class="sec" aria-labelledby="charts-title">
+          <h2 class="sec__title" id="charts-title"><span class="sec__no" aria-hidden="true">1</span>六维雷达与逐题得分</h2>
+          <div class="report__charts">
+            <div class="card" aria-labelledby="radar-title">
+              <div class="card__header">
+                <h3 class="card__title" id="radar-title">雷达图</h3>
+                <span class="card__meta">六维均分 · 刻度 1–5</span>
+              </div>
+              <div class="card__body stack--3" id="report-radar"></div>
+            </div>
+            <div class="card" aria-labelledby="tiles-title">
+              <div class="card__header">
+                <h3 class="card__title" id="tiles-title">逐题得分</h3>
+                <span class="card__meta">每行一个维度 · 颜色越深分越高</span>
+              </div>
+              <div class="card__body stack--3" id="report-tiles"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec" aria-labelledby="dims-title">
+          <h2 class="sec__title" id="dims-title"><span class="sec__no" aria-hidden="true">2</span>六个维度与短板建议</h2>
+          <div class="grid-2" id="report-dims"></div>
+        </section>
+
+        <section class="sec" aria-labelledby="retest-title">
+          <h2 class="sec__title" id="retest-title"><span class="sec__no" aria-hidden="true">3</span>复测提示</h2>
+          <div class="callout callout--accent callout--text">
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-path"/></svg>
+            <div class="callout__body" id="report-retest"></div>
+          </div>
+        </section>
+
+        <footer class="report__foot">
+          <section aria-labelledby="rules-title">
+            <h2 class="report__foot-title" id="rules-title">评分规则</h2>
+            <ol class="rules" id="report-rules"></ol>
+          </section>
+          <section aria-labelledby="note-title">
+            <h2 class="report__foot-title" id="note-title">方法说明</h2>
+            <p class="measure" id="report-disclaimer"></p>
+          </section>
+          <p class="small muted" id="report-colophon"></p>
+          <div class="row row--gap-3 row--wrap no-print" id="report-foot-actions">
+            <button class="btn btn--secondary" type="button" data-action="export-png">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg>导出报告图片
+            </button>
+            <button class="btn btn--secondary" type="button" data-action="copy-summary">
+              <svg class="icon icon--sm" aria-hidden="true"><use href="#i-clipboard-document-check"/></svg>复制文本摘要
+            </button>
+            <button class="btn btn--ghost" type="button" data-action="reset">重新评估</button>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ================= 方法说明 ================= -->
+      <section class="view" data-view-panel="method" aria-labelledby="method-title" hidden>
+        <div class="section-head">
+          <div>
+            <h1 id="method-title">方法说明</h1>
+            <p class="muted">这个工具怎么用、分怎么打、五档结论分别意味着什么。</p>
+          </div>
+        </div>
+
+        <section class="card" aria-labelledby="position-title">
+          <div class="card__header"><h2 class="card__title" id="position-title">定位</h2></div>
+          <div class="card__body stack--3">
+            <p class="measure" id="method-positioning"></p>
+            <div class="callout callout--info callout--text">
+              <svg class="icon" aria-hidden="true"><use href="#i-information-circle"/></svg>
+              <div class="callout__body measure" id="method-disclaimer"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="scale-title-2">
+          <div class="card__header">
+            <h2 class="card__title" id="scale-title-2">评分含义</h2>
+            <span class="card__meta">所有题目共用一张 1–5 量表</span>
+          </div>
+          <div class="card__body card__body--flush">
+            <ul class="scale-legend" id="method-scale"></ul>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="frame-title">
+          <div class="card__header">
+            <h2 class="card__title" id="frame-title">参考框架：六个维度</h2>
+            <span class="card__meta">题目由本工具自行编写</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table table--text">
+              <thead>
+                <tr><th scope="col">维度</th><th scope="col">看什么</th><th scope="col">题目</th><th scope="col" class="num">题数</th></tr>
+              </thead>
+              <tbody id="method-dims"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="levels-title">
+          <div class="card__header">
+            <h2 class="card__title" id="levels-title">五档分级</h2>
+            <span class="card__meta">按 30 题总分 30–150</span>
+          </div>
+          <div class="table-wrap">
+            <table class="table table--text">
+              <thead>
+                <tr><th scope="col">档位</th><th scope="col" class="num">总分区间</th><th scope="col">一句话诊断</th><th scope="col">建议动作</th></tr>
+              </thead>
+              <tbody id="method-levels"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="rules-title-2">
+          <div class="card__header"><h2 class="card__title" id="rules-title-2">评分规则</h2></div>
+          <div class="card__body"><ol class="rules" id="method-rules"></ol></div>
+        </section>
+
+        <section class="card" aria-labelledby="faq-title">
+          <div class="card__header"><h2 class="card__title" id="faq-title">常见问题</h2></div>
+          <div class="card__body"><dl class="faq" id="method-faq"></dl></div>
+        </section>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- 重新评估的二次确认 -->
+<dialog class="dialog" id="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-body">
+  <div class="dialog__panel">
+    <h2 class="dialog__title" id="reset-title">清空作答？</h2>
+    <button class="btn btn--secondary btn--icon dialog__close" type="button" data-close aria-label="关闭对话框">
+      <svg class="icon" aria-hidden="true"><use href="#i-x-mark"/></svg>
+    </button>
+    <div class="dialog__body">
+      <p id="reset-body"></p>
+    </div>
+    <div class="dialog__footer">
+      <button class="btn btn--secondary" type="button" data-close>保留作答</button>
+      <button class="btn btn--danger" type="button" id="reset-confirm">清空作答</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- 公共脚本（勿改写法） -->
+<script src="../../design/shared.js"></script>
+<!-- 应用自己的文件 -->
+<script src="data.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
